@@ -1,0 +1,18 @@
+	- each block accumulates time
+	- track elapsed time since init
+	- measure each block as a % of total time
+	- compute rolling averages?
+	- init
+		- sets main info, like output files, enabled functions, etc.
+		- if not initialized, all functions return immediately
+	- per-block stats can be queried at any time (compute stats on query?)
+	- helper function to print current averages to command line
+	- print to log file... on user request?
+
+
+
+* Multiple usage methods:
+
+1. rolling/smoothed averages: call 'update' regularly, informing the Profiler of, e.g., a new frame; for each block, compute avg time spent per update (averaged over the past several updates); similarly, compute avg percentages per update
+
+2. total percentages: don't call update; just get the final percentages at the end; the results become more accurate with longer profiling runs.

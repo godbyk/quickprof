@@ -1,0 +1,11 @@
+import os
+env = Environment(ENV = os.environ)
+
+if env['PLATFORM'] == 'win32':
+	env.Append(
+		CPPDEFINES = ['/DWIN32', '/D_WIN32'], 
+		CXXFLAGS = ['/W3', '/EHsc', '/wd4996'], 
+		CPPPATH = [], 
+		LIBPATH = [])
+
+env.Program('test', source = ['test.cpp', 'cpp-prof.cpp'])
