@@ -21,15 +21,17 @@ int main(int argc, char* argv[])
 	for (int i = 0; i < 50; ++i)
 	{
 		Profiler::beginBlock("test");
-		Sleep(1000 + (int)randomRealUniform(-500, 500));
+		Sleep(1000 + (int)randomRealUniform(-200, 200));
 		Profiler::endBlock("test");
-		Sleep(1000 + (int)randomRealUniform(-500, 500));
+		Sleep(1000 + (int)randomRealUniform(-200, 200));
+
+		Profiler::startProfilingCycle();
 
 		std::cout << "Iteration " << i << ": " 
-			<< Profiler::getBlockTime("test", Profiler::BLOCK_TOTAL_SECONDS) << " s, " 
-			<< Profiler::getBlockTime("test", Profiler::BLOCK_TOTAL_MILLISECONDS) << " ms, " 
-			<< Profiler::getBlockTime("test", Profiler::BLOCK_TOTAL_MICROSECONDS) << " us, " 
-			<< Profiler::getBlockTime("test", Profiler::BLOCK_TOTAL_PERCENT) << "%" 
+			<< Profiler::getBlockTime("test", Profiler::BLOCK_LAST_CYCLE_SECONDS) << " s, " 
+			<< Profiler::getBlockTime("test", Profiler::BLOCK_LAST_CYCLE_MILLISECONDS) << " ms, " 
+			<< Profiler::getBlockTime("test", Profiler::BLOCK_LAST_CYCLE_MICROSECONDS) << " us, " 
+			<< Profiler::getBlockTime("test", Profiler::BLOCK_LAST_CYCLE_PERCENT) << "%" 
 			<< std::endl;
 	}
 

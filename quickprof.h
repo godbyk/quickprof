@@ -31,6 +31,7 @@
 #define QUICK_PROF_H
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <map>
 #include <assert.h>
@@ -245,8 +246,14 @@ public:
 
 	/// Initializes the profiler.  This must be called first.  The first 
 	/// parameter specifies whether the profiler is enabled; if disabled, 
-	/// all other functions will return immediately.
-	static void init(bool enabled);
+	/// all other functions will return immediately.  The second parameter 
+	/// is the name of an output data file; if this string is not empty, 
+	/// data will be saved on every profiling cycle; if this string is 
+	/// empty, no data will be saved to a file.  The last parameter 
+	/// determines which timing method is used when print data to the 
+	/// output file.
+	static void init(bool enabled=true, const std::string outputFilename="", 
+		BlockTimingMethod outputMethod=BLOCK_TOTAL_PERCENT);
 
 	/// Begins timing the named block of code.
 	static void beginBlock(const std::string& name);
@@ -265,6 +272,11 @@ public:
 	/// regularly if you want to generate detailed timing information.  
 	/// This should not be called within a timing block.
 	static void startProfilingCycle();
+
+	/// A helper function that creates a string of statistics for 
+	/// each timing block.  This is mainly for printing an overall 
+	/// summary to the command line.
+	static std::string Profiler::createStatsString(BlockTimingMethod method);
 
 private:
 	Profiler();
@@ -291,6 +303,15 @@ private:
 
 	/// Internal map of named profile blocks.
 	static std::map<std::string, hidden::ProfileBlock*> mProfileBlocks;
+
+	/// The data file used if this feature is enabled in 'init.'
+	static std::ofstream mOutputFile;
+
+	/// Tracks whether we have begun print data to the output file.
+	static bool mFirstFileOutput;
+
+	/// The method used when printing timing data to an output file.
+	static BlockTimingMethod mFileOutputMethod;
 };
 
 // Note: We must declare these private static variables again here to 
@@ -300,16 +321,25 @@ hidden::Clock Profiler::mClock;
 unsigned long int Profiler::mCurrentCycleStartMicroseconds;
 unsigned long int Profiler::mLastCycleDurationMicroseconds;
 std::map<std::string, hidden::ProfileBlock*> Profiler::mProfileBlocks;
+std::ofstream Profiler::mOutputFile;
+bool Profiler::mFirstFileOutput;
+Profiler::BlockTimingMethod Profiler::mFileOutputMethod;
 
 Profiler::Profiler()
 {
 	mEnabled = false;
 	mCurrentCycleStartMicroseconds = 0;
 	mLastCycleDurationMicroseconds = 0;
+	mFirstFileOutput = true;
 }
 
 Profiler::~Profiler()
 {
+	if (mOutputFile.is_open())
+	{
+		mOutputFile.close();
+	}
+
 	// Destroy all ProfileBlocks.
 	while (!mProfileBlocks.empty())
 	{
@@ -318,10 +348,22 @@ Profiler::~Profiler()
 	mProfileBlocks.clear();
 }
 
-void Profiler::init(bool enabled)
+void Profiler::init(bool enabled, const std::string outputFilename, 
+	BlockTimingMethod outputMethod)
 {
 	mEnabled = enabled;
+	
+	if (!outputFilename.empty())
+	{
+		mOutputFile.open(outputFilename.c_str());
+	}
+
+	mFileOutputMethod = outputMethod;
+
 	mClock.reset();
+
+	// Set the start time for the first cycle.
+	mCurrentCycleStartMicroseconds = mClock.getTimeMicroseconds();
 }
 
 void Profiler::beginBlock(const std::string& name)
@@ -399,48 +441,44 @@ double Profiler::getBlockTime(const std::string& name,
 	switch(method)
 	{
 		case BLOCK_TOTAL_SECONDS:
-			result = block->totalMicroseconds / 1000000;
+			result = (double)block->totalMicroseconds / (double)1000000;
 			break;
 		case BLOCK_TOTAL_MILLISECONDS:
-			result = block->totalMicroseconds / 1000;
+			result = (double)block->totalMicroseconds / (double)1000;
 			break;
 		case BLOCK_TOTAL_MICROSECONDS:
-			result = block->totalMicroseconds;
+			result = (double)block->totalMicroseconds;
 			break;
 		case BLOCK_TOTAL_PERCENT:
 		{
 			double timeSinceInit = (double)mClock.getTimeMicroseconds();
-			if (0 == timeSinceInit)
-			{
-				// No time has elapsed.  Avoid a divide by zero error.
-				result = 0;
-			}
-			else
-			{
-				result = 100 * (double)block->totalMicroseconds / 
-					timeSinceInit;
-			}
+			assert(timeSinceInit > 0);
+			result = 100.0 * (double)block->totalMicroseconds / 
+				timeSinceInit;
 			break;
 		}
 		case BLOCK_LAST_CYCLE_SECONDS:
-			result = block->lastCycleTotalMicroseconds / 1000000;
+			result = (double)block->lastCycleTotalMicroseconds / 
+				(double)1000000;
 			break;
 		case BLOCK_LAST_CYCLE_MILLISECONDS:
-			result = block->lastCycleTotalMicroseconds / 1000;
+			result = (double)block->lastCycleTotalMicroseconds / 
+				(double)1000;
 			break;
 		case BLOCK_LAST_CYCLE_MICROSECONDS:
-			result = block->lastCycleTotalMicroseconds;
+			result = (double)block->lastCycleTotalMicroseconds;
 			break;
 		case BLOCK_LAST_CYCLE_PERCENT:
 		{
 			if (0 == mLastCycleDurationMicroseconds)
 			{
-				// No time has elapsed.  Avoid a divide by zero error.
+				// We have not yet finished a cycle, so just return zero 
+				// percent to avoid a divide by zero error.
 				result = 0;
 			}
 			else
 			{
-				result = 100 * (double)block->lastCycleTotalMicroseconds / 
+				result = 100.0 * (double)block->lastCycleTotalMicroseconds / 
 					mLastCycleDurationMicroseconds;
 			}
 			break;
@@ -455,16 +493,9 @@ double Profiler::getBlockTime(const std::string& name,
 void Profiler::startProfilingCycle()
 {
 	// Store the duration of the cycle that just finished.
-	if (0 == mCurrentCycleStartMicroseconds)
-	{
-		// Do things differently on the first time.
-		mLastCycleDurationMicroseconds = 0;
-	}
-	else
-	{
-		mLastCycleDurationMicroseconds = mClock.getTimeMicroseconds() - 
-			mCurrentCycleStartMicroseconds;
-	}
+	assert(mCurrentCycleStartMicroseconds > 0);
+	mLastCycleDurationMicroseconds = mClock.getTimeMicroseconds() - 
+		mCurrentCycleStartMicroseconds;
 
 	// For each block, update data for the cycle that just finished.
 	std::map<std::string, hidden::ProfileBlock*>::iterator iter;
@@ -476,7 +507,42 @@ void Profiler::startProfilingCycle()
 		block->currentCycleTotalMicroseconds = 0;
 	}
 
+	if (mOutputFile.is_open())
+	{
+		// Print data to the output file.
+		if (mFirstFileOutput)
+		{
+			// On the first iteration, print a header line that shows the 
+			// names of each profiling block.
+			for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
+				++iter)
+			{
+				mOutputFile << (*iter).first << " ";
+			}
+
+			mOutputFile << std::endl;
+			mFirstFileOutput = false;
+		}
+		else
+		{
+			for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
+				++iter)
+			{
+				hidden::ProfileBlock* block = (*iter).second;
+				mOutputFile << getBlockTime((*iter).first, mFileOutputMethod) 
+					<< " ";
+			}
+
+			mOutputFile << std::endl;
+		}
+	}
+
 	mCurrentCycleStartMicroseconds = mClock.getTimeMicroseconds();
+}
+
+std::string Profiler::createStatsString(BlockTimingMethod method)
+{
+	// TODO
 }
 
 #endif

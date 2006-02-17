@@ -1,5 +1,4 @@
-- helper function to print current averages to command line
-- print to log file, if enabled
+- move BlockTimingMethod out?
 - finish sample app, including a gnuplot script
 
 
@@ -9,9 +8,9 @@ Basic Usage
 #include <quickprof/quickprof.h>
 
 2. Initialize the Profiler
-The arguments to the 'init' function are: enable/disable profiling, data output filename (use an empty string to disable this feature).
+The arguments to the 'init' function are: enable/disable profiling, data output filename (implicitly enables data output if this string is not empty).
 
-Profiler::init(true, "runtime_performance.dat", 3);
+Profiler::init(true, "runtime_performance.dat");
 
 3. Setting up Profiling Blocks
 Each section of code that is to be profiled must be surrounded with a pair of profiler begin/end calls.  These "profiling blocks" are distinguished by unique name strings.  Note that profiling blocks can overlap or be nested within other blocks if desired.
