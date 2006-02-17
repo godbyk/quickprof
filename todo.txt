@@ -1,18 +1,48 @@
-	- each block accumulates time
-	- track elapsed time since init
-	- measure each block as a % of total time
-	- compute rolling averages?
-	- init
-		- sets main info, like output files, enabled functions, etc.
-		- if not initialized, all functions return immediately
-	- per-block stats can be queried at any time (compute stats on query?)
-	- helper function to print current averages to command line
-	- print to log file... on user request?
+- helper function to print current averages to command line
+- print to log file, if enabled
+- finish sample app, including a gnuplot script
 
 
+Basic Usage
 
-* Multiple usage methods:
+1. Include the Header File
+#include <quickprof/quickprof.h>
 
-1. rolling/smoothed averages: call 'update' regularly, informing the Profiler of, e.g., a new frame; for each block, compute avg time spent per update (averaged over the past several updates); similarly, compute avg percentages per update
+2. Initialize the Profiler
+The arguments to the 'init' function are: enable/disable profiling, data output filename (use an empty string to disable this feature).
 
-2. total percentages: don't call update; just get the final percentages at the end; the results become more accurate with longer profiling runs.
+Profiler::init(true, "runtime_performance.dat", 3);
+
+3. Setting up Profiling Blocks
+Each section of code that is to be profiled must be surrounded with a pair of profiler begin/end calls.  These "profiling blocks" are distinguished by unique name strings.  Note that profiling blocks can overlap or be nested within other blocks if desired.
+
+void mainLoop()
+{
+	while(true)
+	{
+		Profiler::beginBlock("input");
+		queryUserInput();
+		Profiler::endBlock("input");
+
+		Profiler::beginBlock("physics");
+		processPhysics();
+		Profiler::endBlock("physics");
+
+		Profiler::beginBlock("graphics");
+		updateGraphics();
+		Profiler::endBlock("graphics");
+	}
+}
+
+4. Computing Results
+There are two main ways to use the profiler.  In each method the block timing information can be returned in various forms, including duration (in microseconds, milliseconds, seconds) or as a percentage of the total elapsed time.
+
+Method 1: Overall Timing Summary
+This method simply tracks the total amount of time spent in each block.  When using this method, it is most useful to query the results only once at the end of the program.  Note that the results will become more accurate with longer profiling runs.
+
+TODO: show example code
+
+Method 2: Detailed Timing Summary
+This method computes the time spent in each block over the course of a program's execution.  Printing and graphing this data is more informative than simply getting an overall timing summary (as in Method 1).  A "profiling cycle" is defined using calls to 'startProfilingCycle.'  This function must be called regularly (e.g., once per frame in an interactive 3D application).  It is typical to query timing data immediately after calling 'startProfilingCycle.'  In general, this method is useful for printing/graphing timing information over the course of a program's execution.  
+
+TODO: show example code

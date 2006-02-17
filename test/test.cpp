@@ -26,9 +26,10 @@ int main(int argc, char* argv[])
 		Sleep(1000 + (int)randomRealUniform(-500, 500));
 
 		std::cout << "Iteration " << i << ": " 
-			<< Profiler::getBlockTimeMicroseconds("test") << " us, " 
-			<< Profiler::getBlockTimeMilliseconds("test") << " ms, " 
-			<< Profiler::getBlockTimePercent("test") << "%" 
+			<< Profiler::getBlockTime("test", Profiler::BLOCK_TOTAL_SECONDS) << " s, " 
+			<< Profiler::getBlockTime("test", Profiler::BLOCK_TOTAL_MILLISECONDS) << " ms, " 
+			<< Profiler::getBlockTime("test", Profiler::BLOCK_TOTAL_MICROSECONDS) << " us, " 
+			<< Profiler::getBlockTime("test", Profiler::BLOCK_TOTAL_PERCENT) << "%" 
 			<< std::endl;
 	}
 

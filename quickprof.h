@@ -1,19 +1,39 @@
-// Author: Tyler Streeter
-// Written: 2-16-06
+/************************************************************************
+* QuickProf                                                             *
+* Copyright (C) 2006                                                    *
+* Tyler Streeter  tylerstreeter@gmail.com                               *
+* All rights reserved.                                                  *
+* Web: http://quickprof.sourceforge.net                                 *
+*                                                                       *
+* This library is free software; you can redistribute it and/or         *
+* modify it under the terms of EITHER:                                  *
+*   (1) The GNU Lesser General Public License as published by the Free  *
+*       Software Foundation; either version 2.1 of the License, or (at  *
+*       your option) any later version. The text of the GNU Lesser      *
+*       General Public License is included with this library in the     *
+*       file license-LGPL.txt.                                          *
+*   (2) The BSD-style license that is included with this library in     *
+*       the file license-BSD.txt.                                       *
+*                                                                       *
+* This library is distributed in the hope that it will be useful,       *
+* but WITHOUT ANY WARRANTY; without even the implied warranty of        *
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the files    *
+* license-LGPL.txt and license-BSD.txt for more details.                *
+************************************************************************/
 
-// To use the profiler, call its functions like this: Profiler::init(...), 
-// Profiler::beginBlock(...), Profiler::endBlock(...), etc.
+// Please visit the project website (http://quickprof.sourceforge.net) 
+// for usage instructions.
 
 // Credits: The Clock class was inspired by the Timer classes in 
 // Ogre (www.ogre3d.org).
 
-#ifndef CPP_PERF_H
-#define CPP_PERF_H
+#ifndef QUICK_PROF_H
+#define QUICK_PROF_H
 
-#include <time.h>
 #include <iostream>
 #include <string>
 #include <map>
+#include <assert.h>
 
 // Only VC++ and GCC are supported compilers.
 // TODO: is this restriction necessary?
@@ -33,15 +53,25 @@ namespace hidden
 	{
 		ProfileBlock()
 		{
-			startTickMicroseconds = 0;
-			totalTimeMicroseconds = 0;
+			currentBlockStartMicroseconds = 0;
+			currentCycleTotalMicroseconds = 0;
+			lastCycleTotalMicroseconds = 0;
+			totalMicroseconds = 0;
 		}
 
-		/// The starting tick (in us) of the latest profiling update.
-		unsigned long int startTickMicroseconds;
+		/// The starting time (in us) of the current block update.
+		unsigned long int currentBlockStartMicroseconds;
+
+		/// The accumulated time (in us) spent in this block during the 
+		/// current profiling cycle.
+		unsigned long int currentCycleTotalMicroseconds;
+
+		/// The accumulated time (in us) spent in this block during the 
+		/// past profiling cycle.
+		unsigned long int lastCycleTotalMicroseconds;
 
 		/// The total accumulated time (in us) spent in this block.
-		unsigned long int totalTimeMicroseconds;
+		unsigned long int totalMicroseconds;
 	};
 
 	class Clock
@@ -177,6 +207,42 @@ namespace hidden
 class Profiler
 {
 public:
+	/// A set of ways to retrieve block timing data.
+	enum BlockTimingMethod
+	{
+		/// The total time spent in the block (in seconds) since the 
+		/// profiler was initialized.
+		BLOCK_TOTAL_SECONDS,
+
+		/// The total time spent in the block (in ms) since the 
+		/// profiler was initialized.
+		BLOCK_TOTAL_MILLISECONDS,
+
+		/// The total time spent in the block (in us) since the 
+		/// profiler was initialized.
+		BLOCK_TOTAL_MICROSECONDS,
+
+		/// The total time spent in the block, as a % of the total 
+		/// elapsed time since the profiler was initialized.
+		BLOCK_TOTAL_PERCENT,
+
+		/// The time spent in the block (in seconds) in the most recent 
+		/// profiling cycle.
+		BLOCK_LAST_CYCLE_SECONDS,
+
+		/// The time spent in the block (in ms) in the most recent 
+		/// profiling cycle.
+		BLOCK_LAST_CYCLE_MILLISECONDS,
+
+		/// The time spent in the block (in us) in the most recent 
+		/// profiling cycle.
+		BLOCK_LAST_CYCLE_MICROSECONDS,
+
+		/// The time spent in the block (in seconds) in the most recent 
+		/// profiling cycle, as a % of the total cycle time.
+		BLOCK_LAST_CYCLE_PERCENT
+	};
+
 	/// Initializes the profiler.  This must be called first.  The first 
 	/// parameter specifies whether the profiler is enabled; if disabled, 
 	/// all other functions will return immediately.
@@ -190,20 +256,15 @@ public:
 	/// name.
 	static void endBlock(const std::string& name);
 
-	/// Returns the accumulated time spent (in us) in the named block 
-	/// since the Profiler was initialized.
-	static unsigned long int getBlockTimeMicroseconds(
-		const std::string& name);
+	/// Returns the time spent in the named block according to the 
+	/// given timing method.  See comments on BlockTimingMethod for details.
+	static double getBlockTime(const std::string& name, 
+		BlockTimingMethod method);
 
-	/// Returns the accumulated time spent (in ms) in the named block 
-	/// since the Profiler was initialized.
-	static unsigned long int getBlockTimeMilliseconds(
-		const std::string& name);
-
-	/// Returns the accumulated time spent in the named block as a 
-	/// percentage of the total elapsed time since the Profiler was 
-	/// initialized.
-	static double getBlockTimePercent(const std::string& name);
+	/// Defines the beginning of a new profiling cycle.  Use this 
+	/// regularly if you want to generate detailed timing information.  
+	/// This should not be called within a timing block.
+	static void startProfilingCycle();
 
 private:
 	Profiler();
@@ -213,7 +274,7 @@ private:
 	/// Prints an error message to standard output.
 	static void printError(const std::string& msg)
 	{
-		std::cout << "[cpp-prof error] " << msg << std::endl;
+		std::cout << "[QuickProf error] " << msg << std::endl;
 	}
 
 	/// Determines whether the profiler is enabled.
@@ -221,6 +282,12 @@ private:
 
 	/// The clock used to time profile blocks.
 	static hidden::Clock mClock;
+
+	/// The starting time (in us) of the current profiling cycle.
+	static unsigned long int mCurrentCycleStartMicroseconds;
+
+	/// The duration (in us) of the most recent profiling cycle.
+	static unsigned long int mLastCycleDurationMicroseconds;
 
 	/// Internal map of named profile blocks.
 	static std::map<std::string, hidden::ProfileBlock*> mProfileBlocks;
@@ -230,11 +297,15 @@ private:
 // avoid link errors.
 bool Profiler::mEnabled;
 hidden::Clock Profiler::mClock;
+unsigned long int Profiler::mCurrentCycleStartMicroseconds;
+unsigned long int Profiler::mLastCycleDurationMicroseconds;
 std::map<std::string, hidden::ProfileBlock*> Profiler::mProfileBlocks;
 
 Profiler::Profiler()
 {
 	mEnabled = false;
+	mCurrentCycleStartMicroseconds = 0;
+	mLastCycleDurationMicroseconds = 0;
 }
 
 Profiler::~Profiler()
@@ -276,7 +347,7 @@ void Profiler::beginBlock(const std::string& name)
 	}
 
 	// We do this at the end to get more accurate results.
-	block->startTickMicroseconds = mClock.getTimeMicroseconds();
+	block->currentBlockStartMicroseconds = mClock.getTimeMicroseconds();
 }
 
 void Profiler::endBlock(const std::string& name)
@@ -299,10 +370,14 @@ void Profiler::endBlock(const std::string& name)
 		return;
 	}
 
-	block->totalTimeMicroseconds += endTick - block->startTickMicroseconds;
+	unsigned long int blockDuration = endTick - 
+		block->currentBlockStartMicroseconds;
+	block->currentCycleTotalMicroseconds += blockDuration;
+	block->totalMicroseconds += blockDuration;
 }
 
-unsigned long int Profiler::getBlockTimeMicroseconds(const std::string& name)
+double Profiler::getBlockTime(const std::string& name, 
+	BlockTimingMethod method)
 {
 	if (!mEnabled)
 	{
@@ -319,18 +394,89 @@ unsigned long int Profiler::getBlockTimeMicroseconds(const std::string& name)
 		return 0;
 	}
 
-	return block->totalTimeMicroseconds;
+	double result = 0;
+
+	switch(method)
+	{
+		case BLOCK_TOTAL_SECONDS:
+			result = block->totalMicroseconds / 1000000;
+			break;
+		case BLOCK_TOTAL_MILLISECONDS:
+			result = block->totalMicroseconds / 1000;
+			break;
+		case BLOCK_TOTAL_MICROSECONDS:
+			result = block->totalMicroseconds;
+			break;
+		case BLOCK_TOTAL_PERCENT:
+		{
+			double timeSinceInit = (double)mClock.getTimeMicroseconds();
+			if (0 == timeSinceInit)
+			{
+				// No time has elapsed.  Avoid a divide by zero error.
+				result = 0;
+			}
+			else
+			{
+				result = 100 * (double)block->totalMicroseconds / 
+					timeSinceInit;
+			}
+			break;
+		}
+		case BLOCK_LAST_CYCLE_SECONDS:
+			result = block->lastCycleTotalMicroseconds / 1000000;
+			break;
+		case BLOCK_LAST_CYCLE_MILLISECONDS:
+			result = block->lastCycleTotalMicroseconds / 1000;
+			break;
+		case BLOCK_LAST_CYCLE_MICROSECONDS:
+			result = block->lastCycleTotalMicroseconds;
+			break;
+		case BLOCK_LAST_CYCLE_PERCENT:
+		{
+			if (0 == mLastCycleDurationMicroseconds)
+			{
+				// No time has elapsed.  Avoid a divide by zero error.
+				result = 0;
+			}
+			else
+			{
+				result = 100 * (double)block->lastCycleTotalMicroseconds / 
+					mLastCycleDurationMicroseconds;
+			}
+			break;
+		}
+		default:
+			assert(false);
+	}
+
+	return result;
 }
 
-unsigned long int Profiler::getBlockTimeMilliseconds(const std::string& name)
+void Profiler::startProfilingCycle()
 {
-	return (getBlockTimeMicroseconds(name) / 1000);
-}
+	// Store the duration of the cycle that just finished.
+	if (0 == mCurrentCycleStartMicroseconds)
+	{
+		// Do things differently on the first time.
+		mLastCycleDurationMicroseconds = 0;
+	}
+	else
+	{
+		mLastCycleDurationMicroseconds = mClock.getTimeMicroseconds() - 
+			mCurrentCycleStartMicroseconds;
+	}
 
-double Profiler::getBlockTimePercent(const std::string& name)
-{
-	return (100 * (double)getBlockTimeMicroseconds(name) / 
-		(double)mClock.getTimeMicroseconds());
+	// For each block, update data for the cycle that just finished.
+	std::map<std::string, hidden::ProfileBlock*>::iterator iter;
+	for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); ++iter)
+	{
+		hidden::ProfileBlock* block = (*iter).second;
+		block->lastCycleTotalMicroseconds = 
+			block->currentCycleTotalMicroseconds;
+		block->currentCycleTotalMicroseconds = 0;
+	}
+
+	mCurrentCycleStartMicroseconds = mClock.getTimeMicroseconds();
 }
 
 #endif

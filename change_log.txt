@@ -1,0 +1,11 @@
+QuickProf
+Copyright (c) 2006 Tyler Streeter
+http://quickprof.sourceforge.net
+
+
+Version 0.8.0
+============================================================
+
+Change Log
+----------------------------------------------------
+Initial version.
