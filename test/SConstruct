@@ -8,4 +8,9 @@ if env['PLATFORM'] == 'win32':
 		CPPPATH = [], 
 		LIBPATH = [])
 
-env.Program('test', source = ['test.cpp', 'cpp-prof.cpp'])
+	# If you are using VC++ 8.0, you probably need to install the 
+	# Microsoft Platform SDK and uncomment the following.
+	#env.Append(CPPPATH = ['C:\Program Files\Microsoft Platform SDK\Include'])
+	#env.Append(LIBPATH = ['C:\Program Files\Microsoft Platform SDK\Lib'])
+
+env.Program('test', source = ['test.cpp'])

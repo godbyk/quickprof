@@ -1,39 +1,54 @@
 #include "../quickprof.h"
 
-double randomRealUniform(double min, double max)
+int randomIntUniform(int min, int max)
 {
-	return (double)rand() / RAND_MAX * (max - min) + min;
+	return int((max - min + 1) * rand() / (RAND_MAX + 1.0)) + min;
+}
+
+void approxDelay(int milliseconds)
+{
+	int spread = (int)(0.15 * (double)milliseconds);
+	Sleep(milliseconds + randomIntUniform(-spread, spread));
 }
 
 int main(int argc, char* argv[])
 {
+	// Seed the random number generator for the 'randomIntUniform' function.
 	srand((unsigned int)time(NULL));
 
-	//hidden::Clock c;
-	//for (int i = 0; i < 100; ++i)
-	//{
-	//	std::cout << "Time " << i << ": " << c.getTimeMicroseconds() * 0.000001 << std::endl;
-	//	Sleep(1000);
-	//}
-
-	Profiler::init(true);
-
-	for (int i = 0; i < 50; ++i)
+	hidden::Clock c;
+	for (int i = 0; i < 10; ++i)
 	{
-		Profiler::beginBlock("test");
-		Sleep(1000 + (int)randomRealUniform(-200, 200));
-		Profiler::endBlock("test");
-		Sleep(1000 + (int)randomRealUniform(-200, 200));
+		std::cout << "Time " << i << ": " << c.getTimeMicroseconds() * 0.000001 << std::endl;
+		Sleep(1000);
+	}
+
+	Profiler::init(true, "results.dat", Profiler::BLOCK_CYCLE_PERCENT);
+
+	for (int i = 0; i < 51; ++i)
+	{
+		Profiler::beginBlock("block1");
+		approxDelay(100);
+		Profiler::endBlock("block1");
+
+		Profiler::beginBlock("block2");
+		approxDelay(200);
+		Profiler::endBlock("block2");
+
+		Profiler::beginBlock("block3");
+		approxDelay(300);
+		Profiler::endBlock("block3");
+
+		// Non-profiled code.
+		approxDelay(400);
 
 		Profiler::startProfilingCycle();
-
-		std::cout << "Iteration " << i << ": " 
-			<< Profiler::getBlockTime("test", Profiler::BLOCK_LAST_CYCLE_SECONDS) << " s, " 
-			<< Profiler::getBlockTime("test", Profiler::BLOCK_LAST_CYCLE_MILLISECONDS) << " ms, " 
-			<< Profiler::getBlockTime("test", Profiler::BLOCK_LAST_CYCLE_MICROSECONDS) << " us, " 
-			<< Profiler::getBlockTime("test", Profiler::BLOCK_LAST_CYCLE_PERCENT) << "%" 
-			<< std::endl;
 	}
+
+	// Print the overall averages.
+	std::cout << Profiler::createStatsString(Profiler::BLOCK_TOTAL_PERCENT) << std::endl;
+
+	Profiler::destroy();
 
 	return 0;
 }

@@ -36,8 +36,6 @@
 #include <map>
 #include <assert.h>
 
-// Only VC++ and GCC are supported compilers.
-// TODO: is this restriction necessary?
 #if defined(WIN32) || defined(_WIN32)
 	#define USE_WINDOWS_TIMERS
 	#include <windows.h>
@@ -229,19 +227,19 @@ public:
 
 		/// The time spent in the block (in seconds) in the most recent 
 		/// profiling cycle.
-		BLOCK_LAST_CYCLE_SECONDS,
+		BLOCK_CYCLE_SECONDS,
 
 		/// The time spent in the block (in ms) in the most recent 
 		/// profiling cycle.
-		BLOCK_LAST_CYCLE_MILLISECONDS,
+		BLOCK_CYCLE_MILLISECONDS,
 
 		/// The time spent in the block (in us) in the most recent 
 		/// profiling cycle.
-		BLOCK_LAST_CYCLE_MICROSECONDS,
+		BLOCK_CYCLE_MICROSECONDS,
 
 		/// The time spent in the block (in seconds) in the most recent 
 		/// profiling cycle, as a % of the total cycle time.
-		BLOCK_LAST_CYCLE_PERCENT
+		BLOCK_CYCLE_PERCENT
 	};
 
 	/// Initializes the profiler.  This must be called first.  The first 
@@ -254,6 +252,9 @@ public:
 	/// output file.
 	static void init(bool enabled=true, const std::string outputFilename="", 
 		BlockTimingMethod outputMethod=BLOCK_TOTAL_PERCENT);
+
+	/// Cleans up allocated memory.
+	static void destroy();
 
 	/// Begins timing the named block of code.
 	static void beginBlock(const std::string& name);
@@ -312,40 +313,33 @@ private:
 
 	/// The method used when printing timing data to an output file.
 	static BlockTimingMethod mFileOutputMethod;
+
+	/// The number of the current profiling cycle.
+	static unsigned long int mCycleNumber;
 };
 
 // Note: We must declare these private static variables again here to 
 // avoid link errors.
-bool Profiler::mEnabled;
+bool Profiler::mEnabled = false;
 hidden::Clock Profiler::mClock;
-unsigned long int Profiler::mCurrentCycleStartMicroseconds;
-unsigned long int Profiler::mLastCycleDurationMicroseconds;
+unsigned long int Profiler::mCurrentCycleStartMicroseconds = 0;
+unsigned long int Profiler::mLastCycleDurationMicroseconds = 0;
 std::map<std::string, hidden::ProfileBlock*> Profiler::mProfileBlocks;
 std::ofstream Profiler::mOutputFile;
-bool Profiler::mFirstFileOutput;
+bool Profiler::mFirstFileOutput = true;
 Profiler::BlockTimingMethod Profiler::mFileOutputMethod;
+unsigned long int Profiler::mCycleNumber = 0;
 
 Profiler::Profiler()
 {
-	mEnabled = false;
-	mCurrentCycleStartMicroseconds = 0;
-	mLastCycleDurationMicroseconds = 0;
-	mFirstFileOutput = true;
+	// This never gets called because a Profiler instance is never 
+	// created.
 }
 
 Profiler::~Profiler()
 {
-	if (mOutputFile.is_open())
-	{
-		mOutputFile.close();
-	}
-
-	// Destroy all ProfileBlocks.
-	while (!mProfileBlocks.empty())
-	{
-		delete (*mProfileBlocks.begin()).second;
-	}
-	mProfileBlocks.clear();
+	// This never gets called because a Profiler instance is never 
+	// created.
 }
 
 void Profiler::init(bool enabled, const std::string outputFilename, 
@@ -364,6 +358,21 @@ void Profiler::init(bool enabled, const std::string outputFilename,
 
 	// Set the start time for the first cycle.
 	mCurrentCycleStartMicroseconds = mClock.getTimeMicroseconds();
+}
+
+void Profiler::destroy()
+{
+	if (mOutputFile.is_open())
+	{
+		mOutputFile.close();
+	}
+
+	// Destroy all ProfileBlocks.
+	while (!mProfileBlocks.empty())
+	{
+		delete (*mProfileBlocks.begin()).second;
+		mProfileBlocks.erase(mProfileBlocks.begin());
+	}
 }
 
 void Profiler::beginBlock(const std::string& name)
@@ -457,18 +466,18 @@ double Profiler::getBlockTime(const std::string& name,
 				timeSinceInit;
 			break;
 		}
-		case BLOCK_LAST_CYCLE_SECONDS:
+		case BLOCK_CYCLE_SECONDS:
 			result = (double)block->lastCycleTotalMicroseconds / 
 				(double)1000000;
 			break;
-		case BLOCK_LAST_CYCLE_MILLISECONDS:
+		case BLOCK_CYCLE_MILLISECONDS:
 			result = (double)block->lastCycleTotalMicroseconds / 
 				(double)1000;
 			break;
-		case BLOCK_LAST_CYCLE_MICROSECONDS:
+		case BLOCK_CYCLE_MICROSECONDS:
 			result = (double)block->lastCycleTotalMicroseconds;
 			break;
-		case BLOCK_LAST_CYCLE_PERCENT:
+		case BLOCK_CYCLE_PERCENT:
 		{
 			if (0 == mLastCycleDurationMicroseconds)
 			{
@@ -493,7 +502,6 @@ double Profiler::getBlockTime(const std::string& name,
 void Profiler::startProfilingCycle()
 {
 	// Store the duration of the cycle that just finished.
-	assert(mCurrentCycleStartMicroseconds > 0);
 	mLastCycleDurationMicroseconds = mClock.getTimeMicroseconds() - 
 		mCurrentCycleStartMicroseconds;
 
@@ -514,6 +522,8 @@ void Profiler::startProfilingCycle()
 		{
 			// On the first iteration, print a header line that shows the 
 			// names of each profiling block.
+			mOutputFile << "#cycle ";
+
 			for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
 				++iter)
 			{
@@ -523,26 +533,81 @@ void Profiler::startProfilingCycle()
 			mOutputFile << std::endl;
 			mFirstFileOutput = false;
 		}
-		else
-		{
-			for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
-				++iter)
-			{
-				hidden::ProfileBlock* block = (*iter).second;
-				mOutputFile << getBlockTime((*iter).first, mFileOutputMethod) 
-					<< " ";
-			}
 
-			mOutputFile << std::endl;
+		mOutputFile << mCycleNumber << " ";
+
+		for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
+			++iter)
+		{
+			mOutputFile << getBlockTime((*iter).first, mFileOutputMethod) 
+				<< " ";
 		}
+
+		mOutputFile << std::endl;
 	}
 
+	++mCycleNumber;
 	mCurrentCycleStartMicroseconds = mClock.getTimeMicroseconds();
 }
 
 std::string Profiler::createStatsString(BlockTimingMethod method)
 {
-	// TODO
+	std::string s;
+	std::string suffix;
+
+	switch(method)
+	{
+		case BLOCK_TOTAL_SECONDS:
+			suffix = "s";
+			break;
+		case BLOCK_TOTAL_MILLISECONDS:
+			suffix = "ms";
+			break;
+		case BLOCK_TOTAL_MICROSECONDS:
+			suffix = "us";
+			break;
+		case BLOCK_TOTAL_PERCENT:
+		{
+			suffix = "%";
+			break;
+		}
+		case BLOCK_CYCLE_SECONDS:
+			suffix = "s";
+			break;
+		case BLOCK_CYCLE_MILLISECONDS:
+			suffix = "ms";
+			break;
+		case BLOCK_CYCLE_MICROSECONDS:
+			suffix = "us";
+			break;
+		case BLOCK_CYCLE_PERCENT:
+		{
+			suffix = "%";
+			break;
+		}
+		default:
+			assert(false);
+	}
+
+	std::map<std::string, hidden::ProfileBlock*>::iterator iter;
+	for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); ++iter)
+	{
+		if (iter != mProfileBlocks.begin())
+		{
+			s += "\n";
+		}
+
+		char blockTime[64];
+		sprintf(blockTime, "%lf", getBlockTime((*iter).first, method));
+
+		s += (*iter).first;
+		s += ": ";
+		s += blockTime;
+		s += " ";
+		s += suffix;
+	}
+
+	return s;
 }
 
 #endif

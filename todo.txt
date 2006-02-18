@@ -1,6 +1,4 @@
-- move BlockTimingMethod out?
-- finish sample app, including a gnuplot script
-
+Add the following to the website:
 
 Basic Usage
 
