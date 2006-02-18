@@ -1,3 +1,4 @@
+Fix gnuplot script on all platforms.
 Add the following to the website:
 
 Basic Usage
