@@ -141,7 +141,7 @@ namespace hidden
 			struct timeval currentTime;
 			gettimeofday(&currentTime, NULL);
 			return (currentTime.tv_sec - mStartTime.tv_sec) * 1000 + 
-				(currentTime.tv_usec - mStartTime.tv_usec) * 0.001;
+				(currentTime.tv_usec - mStartTime.tv_usec) / 1000;
 #endif
 		}
 

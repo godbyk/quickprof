@@ -8,7 +8,11 @@ int randomIntUniform(int min, int max)
 void approxDelay(int milliseconds)
 {
 	int spread = (int)(0.15 * (double)milliseconds);
-	Sleep(milliseconds + randomIntUniform(-spread, spread));
+#ifdef WIN32
+		::Sleep(milliseconds + randomIntUniform(-spread, spread));
+#else
+		usleep(milliseconds + randomIntUniform(-spread, spread));
+#endif
 }
 
 int main(int argc, char* argv[])
@@ -20,7 +24,11 @@ int main(int argc, char* argv[])
 	for (int i = 0; i < 10; ++i)
 	{
 		std::cout << "Time " << i << ": " << c.getTimeMicroseconds() * 0.000001 << std::endl;
-		Sleep(1000);
+#ifdef WIN32
+		::Sleep(1000);
+#else
+		usleep(1000);
+#endif
 	}
 
 	Profiler::init(true, "results.dat", Profiler::BLOCK_CYCLE_PERCENT);
