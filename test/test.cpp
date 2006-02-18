@@ -11,7 +11,8 @@ void approxDelay(int milliseconds)
 #ifdef WIN32
 		::Sleep(milliseconds + randomIntUniform(-spread, spread));
 #else
-		usleep(milliseconds + randomIntUniform(-spread, spread));
+		usleep(1000 * milliseconds + 1000 * randomIntUniform(
+			-spread, spread));
 #endif
 }
 
@@ -27,7 +28,7 @@ int main(int argc, char* argv[])
 #ifdef WIN32
 		::Sleep(1000);
 #else
-		usleep(1000);
+		usleep(1000000);
 #endif
 	}
 
