@@ -1,5 +1,6 @@
 #set terminal svg size 720 540 fixed fsize 24
-set terminal png large size 800,600 xffffff
+#set terminal png large size 800,600 xffffff
+set terminal png medium xffffff
 
 set xlabel "Profiling Cycle"
 
