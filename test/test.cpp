@@ -21,18 +21,8 @@ int main(int argc, char* argv[])
 	// Seed the random number generator for the 'randomIntUniform' function.
 	srand((unsigned int)time(NULL));
 
-	hidden::Clock c;
-	for (int i = 0; i < 10; ++i)
-	{
-		std::cout << "Time " << i << ": " << c.getTimeMicroseconds() * 0.000001 << std::endl;
-#ifdef WIN32
-		::Sleep(1000);
-#else
-		usleep(1000000);
-#endif
-	}
-
-	Profiler::init(true, "results.dat", Profiler::BLOCK_CYCLE_PERCENT);
+	// To disable profiling altogether, simply comment out the following line.
+	Profiler::init("results.dat", Profiler::BLOCK_CYCLE_PERCENT);
 
 	for (int i = 0; i < 51; ++i)
 	{
@@ -51,7 +41,7 @@ int main(int argc, char* argv[])
 		// Non-profiled code.
 		approxDelay(400);
 
-		Profiler::startProfilingCycle();
+		Profiler::endProfilingCycle();
 	}
 
 	// Print the overall averages.

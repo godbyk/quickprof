@@ -242,15 +242,15 @@ public:
 		BLOCK_CYCLE_PERCENT
 	};
 
-	/// Initializes the profiler.  This must be called first.  The first 
-	/// parameter specifies whether the profiler is enabled; if disabled, 
-	/// all other functions will return immediately.  The second parameter 
+	/// Initializes the profiler.  This must be called first.  If this is 
+	/// never called, the profiler is effectively disabled; all other 
+	/// functions will return immediately.  The first parameter 
 	/// is the name of an output data file; if this string is not empty, 
 	/// data will be saved on every profiling cycle; if this string is 
-	/// empty, no data will be saved to a file.  The last parameter 
-	/// determines which timing method is used when print data to the 
+	/// empty, no data will be saved to a file.  The second parameter 
+	/// determines which timing method is used when printing data to the 
 	/// output file.
-	static void init(bool enabled=true, const std::string outputFilename="", 
+	static void init(const std::string outputFilename="", 
 		BlockTimingMethod outputMethod=BLOCK_TOTAL_PERCENT);
 
 	/// Cleans up allocated memory.
@@ -269,10 +269,10 @@ public:
 	static double getBlockTime(const std::string& name, 
 		BlockTimingMethod method);
 
-	/// Defines the beginning of a new profiling cycle.  Use this 
-	/// regularly if you want to generate detailed timing information.  
-	/// This should not be called within a timing block.
-	static void startProfilingCycle();
+	/// Defines the end of a profiling cycle.  Use this regularly if you 
+	/// want to generate detailed timing information.  This must not be 
+	/// called within a timing block.
+	static void endProfilingCycle();
 
 	/// A helper function that creates a string of statistics for 
 	/// each timing block.  This is mainly for printing an overall 
@@ -342,10 +342,10 @@ Profiler::~Profiler()
 	// created.
 }
 
-void Profiler::init(bool enabled, const std::string outputFilename, 
+void Profiler::init(const std::string outputFilename, 
 	BlockTimingMethod outputMethod)
 {
-	mEnabled = enabled;
+	mEnabled = true;
 	
 	if (!outputFilename.empty())
 	{
@@ -499,7 +499,7 @@ double Profiler::getBlockTime(const std::string& name,
 	return result;
 }
 
-void Profiler::startProfilingCycle()
+void Profiler::endProfilingCycle()
 {
 	// Store the duration of the cycle that just finished.
 	mLastCycleDurationMicroseconds = mClock.getTimeMicroseconds() - 
