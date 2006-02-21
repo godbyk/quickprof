@@ -362,6 +362,11 @@ void Profiler::init(const std::string outputFilename,
 
 void Profiler::destroy()
 {
+	if (!mEnabled)
+	{
+		return;
+	}
+
 	if (mOutputFile.is_open())
 	{
 		mOutputFile.close();
@@ -501,6 +506,11 @@ double Profiler::getBlockTime(const std::string& name,
 
 void Profiler::endProfilingCycle()
 {
+	if (!mEnabled)
+	{
+		return;
+	}
+
 	// Store the duration of the cycle that just finished.
 	mLastCycleDurationMicroseconds = mClock.getTimeMicroseconds() - 
 		mCurrentCycleStartMicroseconds;
@@ -552,6 +562,11 @@ void Profiler::endProfilingCycle()
 
 std::string Profiler::createStatsString(BlockTimingMethod method)
 {
+	if (!mEnabled)
+	{
+		return "";
+	}
+
 	std::string s;
 	std::string suffix;
 
