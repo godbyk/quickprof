@@ -1,5 +1,8 @@
-Fix gnuplot script on all platforms.
-Add the following to the website:
+* test gnuplot script on all platforms.
+* finalize api
+* website
+	- doxygen api pages
+	- finish writing and add the text below
 
 Basic Usage
 
