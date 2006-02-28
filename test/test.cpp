@@ -33,7 +33,6 @@ void approxDelay(int milliseconds)
 {
 	int spread = (int)(0.15 * (double)milliseconds);
 	int delay = milliseconds + randomIntUniform(-spread, spread);
-	std::cout << "spread: " << spread << ", delay: " << delay << std::endl;
 #ifdef WIN32
 	::Sleep(delay);
 #else
@@ -48,12 +47,6 @@ int main(int argc, char* argv[])
 
 	// To disable profiling, simply comment out the following line.
 	Profiler::init("results.dat", Profiler::BLOCK_CYCLE_SECONDS);
-
-	for (int i = 0; i < 5; ++i)
-	{
-		std::cout << "random: " << randomIntUniform(-14, 14) << std::endl;
-	}
-	return 0;
 
 	for (int i = 0; i < 31; ++i)
 	{
