@@ -455,10 +455,10 @@ double Profiler::getBlockTime(const std::string& name,
 	switch(method)
 	{
 		case BLOCK_TOTAL_SECONDS:
-			result = (double)block->totalMicroseconds / (double)1000000;
+			result = (double)block->totalMicroseconds * (double)0.000001;
 			break;
 		case BLOCK_TOTAL_MILLISECONDS:
-			result = (double)block->totalMicroseconds / (double)1000;
+			result = (double)block->totalMicroseconds * (double)0.001;
 			break;
 		case BLOCK_TOTAL_MICROSECONDS:
 			result = (double)block->totalMicroseconds;
@@ -478,12 +478,12 @@ double Profiler::getBlockTime(const std::string& name,
 			break;
 		}
 		case BLOCK_CYCLE_SECONDS:
-			result = (double)block->lastCycleTotalMicroseconds / 
-				(double)1000000;
+			result = (double)block->lastCycleTotalMicroseconds * 
+				(double)0.000001;
 			break;
 		case BLOCK_CYCLE_MILLISECONDS:
-			result = (double)block->lastCycleTotalMicroseconds / 
-				(double)1000;
+			result = (double)block->lastCycleTotalMicroseconds * 
+				(double)0.001;
 			break;
 		case BLOCK_CYCLE_MICROSECONDS:
 			result = (double)block->lastCycleTotalMicroseconds;
