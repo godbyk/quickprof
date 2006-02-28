@@ -4,7 +4,7 @@ set terminal png medium xffffff
 
 set xlabel "Profiling Cycle"
 
-set ylabel "Percent of Total Time"
+set ylabel "Duration (seconds)"
 set output "results.png"
 plot "results.dat" using 1:2 title "block1" with lines linewidth 4, \
 	"results.dat" using 1:3 title "block2" with lines linewidth 4, \

@@ -34,7 +34,6 @@
 #include <fstream>
 #include <string>
 #include <map>
-#include <assert.h>
 
 #if defined(WIN32) || defined(_WIN32)
 	#define USE_WINDOWS_TIMERS
@@ -251,7 +250,7 @@ public:
 	/// determines which timing method is used when printing data to the 
 	/// output file.
 	static void init(const std::string outputFilename="", 
-		BlockTimingMethod outputMethod=BLOCK_TOTAL_PERCENT);
+		BlockTimingMethod outputMethod=BLOCK_CYCLE_MILLISECONDS);
 
 	/// Cleans up allocated memory.
 	static void destroy();
@@ -267,7 +266,7 @@ public:
 	/// Returns the time spent in the named block according to the 
 	/// given timing method.  See comments on BlockTimingMethod for details.
 	static double getBlockTime(const std::string& name, 
-		BlockTimingMethod method);
+		BlockTimingMethod method=BLOCK_CYCLE_MILLISECONDS);
 
 	/// Defines the end of a profiling cycle.  Use this regularly if you 
 	/// want to generate detailed timing information.  This must not be 
@@ -277,7 +276,8 @@ public:
 	/// A helper function that creates a string of statistics for 
 	/// each timing block.  This is mainly for printing an overall 
 	/// summary to the command line.
-	static std::string Profiler::createStatsString(BlockTimingMethod method);
+	static std::string Profiler::createStatsString(
+		BlockTimingMethod method=BLOCK_TOTAL_PERCENT);
 
 private:
 	Profiler();
@@ -466,9 +466,15 @@ double Profiler::getBlockTime(const std::string& name,
 		case BLOCK_TOTAL_PERCENT:
 		{
 			double timeSinceInit = (double)mClock.getTimeMicroseconds();
-			assert(timeSinceInit > 0);
-			result = 100.0 * (double)block->totalMicroseconds / 
-				timeSinceInit;
+			if (timeSinceInit <= 0)
+			{
+				result = 0;
+			}
+			else
+			{
+				result = 100.0 * (double)block->totalMicroseconds / 
+					timeSinceInit;
+			}
 			break;
 		}
 		case BLOCK_CYCLE_SECONDS:
@@ -498,7 +504,7 @@ double Profiler::getBlockTime(const std::string& name,
 			break;
 		}
 		default:
-			assert(false);
+			break;
 	}
 
 	return result;
@@ -601,7 +607,7 @@ std::string Profiler::createStatsString(BlockTimingMethod method)
 			break;
 		}
 		default:
-			assert(false);
+			break;
 	}
 
 	std::map<std::string, hidden::ProfileBlock*>::iterator iter;
