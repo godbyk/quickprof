@@ -25,6 +25,8 @@
 
 int randomIntUniform(int min, int max)
 {
+	std::cout << "min: " << min << ", max: " << max << ", rand(): " << rand() 
+		<< ", RAND_MAX: " << RAND_MAX << std::endl;
 	return int((max - min + 1) * rand() / (RAND_MAX + 1.0)) + min;
 }
 
@@ -48,7 +50,7 @@ int main(int argc, char* argv[])
 	// To disable profiling, simply comment out the following line.
 	Profiler::init("results.dat", Profiler::BLOCK_CYCLE_SECONDS);
 
-	for (int i = 0; i < 30; ++i)
+	for (int i = 0; i < 5; ++i)
 	{
 		std::cout << "random: " << randomIntUniform(-14, 14) << std::endl;
 	}
