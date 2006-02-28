@@ -23,11 +23,9 @@
 
 #include "../quickprof.h"
 
-int randomIntUniform(int min, int max)
+long int randomIntUniform(long int min, long int max)
 {
-	std::cout << "min: " << min << ", max: " << max << ", rand(): " << rand() 
-		<< ", RAND_MAX: " << RAND_MAX << std::endl;
-	return int((max - min + 1) * rand() / (RAND_MAX + 1.0)) + min;
+	return (long int)((max - min + 1) * rand() / (RAND_MAX + 1.0)) + min;
 }
 
 void approxDelay(int milliseconds)
