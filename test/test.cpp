@@ -32,6 +32,7 @@ void approxDelay(int milliseconds)
 {
 	int spread = (int)(0.15 * (double)milliseconds);
 	int delay = milliseconds + randomIntUniform(-spread, spread);
+	std::cout << "spread: " << spread << ", delay: " << delay << std::endl;
 #ifdef WIN32
 	::Sleep(delay);
 #else
