@@ -49,6 +49,24 @@ int main(int argc, char* argv[])
 
 	hidden::Clock c;
 
+	for (int i = 0; i < 10; ++i)
+	{
+		unsigned long int start = c.getTimeMicroseconds();
+		approxDelay(100);
+		unsigned long int stop = c.getTimeMicroseconds();
+
+		std::cout << "clock: " << (stop - start) << std::endl;
+	}
+
+	for (int i = 0; i < 10; ++i)
+	{
+		unsigned long int start = c.getTimeMicroseconds();
+		usleep(100);
+		unsigned long int stop = c.getTimeMicroseconds();
+
+		std::cout << "clock: " << (stop - start) << std::endl;
+	}
+
 	for (int i = 0; i < 31; ++i)
 	{
 		Profiler::beginBlock("block1");
@@ -59,18 +77,14 @@ int main(int argc, char* argv[])
 		approxDelay(200);
 		Profiler::endBlock("block2");
 
-		unsigned long int start = c.getTimeMicroseconds();
 		Profiler::beginBlock("block3");
 		approxDelay(300);
 		Profiler::endBlock("block3");
-		unsigned long int stop = c.getTimeMicroseconds();
 
 		// Non-profiled code.
 		approxDelay(400);
 
 		Profiler::endProfilingCycle();
-		std::cout << "Profiler: " << Profiler::getBlockTime("block3", Profiler::BLOCK_CYCLE_MICROSECONDS) 
-			<< ", clock: " << (stop - start) << std::endl;
 	}
 
 	// Print the overall averages.
