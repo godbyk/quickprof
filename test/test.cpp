@@ -47,6 +47,8 @@ int main(int argc, char* argv[])
 	// To disable profiling, simply comment out the following line.
 	Profiler::init("results.dat", Profiler::BLOCK_CYCLE_SECONDS);
 
+	hidden::Clock c;
+
 	for (int i = 0; i < 31; ++i)
 	{
 		Profiler::beginBlock("block1");
@@ -57,14 +59,18 @@ int main(int argc, char* argv[])
 		approxDelay(200);
 		Profiler::endBlock("block2");
 
+		unsigned long int start = c.getTimeMicroseconds();
 		Profiler::beginBlock("block3");
 		approxDelay(300);
 		Profiler::endBlock("block3");
+		unsigned long int stop = c.getTimeMicroseconds();
 
 		// Non-profiled code.
 		approxDelay(400);
 
 		Profiler::endProfilingCycle();
+		std::cout << "Profiler: " << Profiler::getBlockTime("block3", Profiler::BLOCK_CYCLE_MICROSECONDS) 
+			<< ", clock: " << (stop - start) << std::endl;
 	}
 
 	// Print the overall averages.
