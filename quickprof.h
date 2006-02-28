@@ -430,6 +430,8 @@ void Profiler::endBlock(const std::string& name)
 		block->currentBlockStartMicroseconds;
 	block->currentCycleTotalMicroseconds += blockDuration;
 	block->totalMicroseconds += blockDuration;
+
+	std::cout << "time: " << block->currentCycleTotalMicroseconds << std::endl;
 }
 
 double Profiler::getBlockTime(const std::string& name, 
@@ -529,9 +531,6 @@ void Profiler::endProfilingCycle()
 		block->lastCycleTotalMicroseconds = 
 			block->currentCycleTotalMicroseconds;
 		block->currentCycleTotalMicroseconds = 0;
-
-		std::cout << "time: " << block->lastCycleTotalMicroseconds 
-			<< ", time double: " << (double)block->lastCycleTotalMicroseconds  << std::endl;
 	}
 
 	if (mOutputFile.is_open())
