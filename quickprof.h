@@ -480,6 +480,10 @@ double Profiler::getBlockTime(const std::string& name,
 		case BLOCK_CYCLE_SECONDS:
 			result = (double)block->lastCycleTotalMicroseconds * 
 				(double)0.000001;
+
+			std::cout << "time us: " << (double)block->lastCycleTotalMicroseconds 
+				<< ", time s: " << result << std::endl;
+
 			break;
 		case BLOCK_CYCLE_MILLISECONDS:
 			result = (double)block->lastCycleTotalMicroseconds * 
@@ -557,8 +561,6 @@ void Profiler::endProfilingCycle()
 		{
 			mOutputFile << getBlockTime((*iter).first, mFileOutputMethod) 
 				<< " ";
-
-			std::cout << "block time: " << getBlockTime((*iter).first, mFileOutputMethod) << std::endl;
 		}
 
 		mOutputFile << std::endl;
