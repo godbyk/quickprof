@@ -48,25 +48,11 @@ int main(int argc, char* argv[])
 	// To disable profiling, simply comment out the following line.
 	Profiler::init("results.dat", Profiler::BLOCK_CYCLE_SECONDS);
 
-	hidden::Clock c;
-
-	for (int i = 0; i < 10; ++i)
+	for (int i = 0; i < 30; ++i)
 	{
-		unsigned long int start = c.getTimeMicroseconds();
-		approxDelay(100);
-		unsigned long int stop = c.getTimeMicroseconds();
-
-		std::cout << "clock: " << (stop - start) << std::endl;
+		std::cout << "random: " << randomIntUniform(-14, 14) << std::endl;
 	}
-
-	for (int i = 0; i < 10; ++i)
-	{
-		unsigned long int start = c.getTimeMicroseconds();
-		usleep(100000);
-		unsigned long int stop = c.getTimeMicroseconds();
-
-		std::cout << "clock: " << (stop - start) << std::endl;
-	}
+	return 0;
 
 	for (int i = 0; i < 31; ++i)
 	{
