@@ -28,16 +28,20 @@ int randomIntUniform(int min, int max)
 	return int((max - min + 1) * rand() / (RAND_MAX + 1.0)) + min;
 }
 
+hidden::Clock c;
+
 void approxDelay(int milliseconds)
 {
 	int spread = (int)(0.15 * (double)milliseconds);
 	int delay = milliseconds + randomIntUniform(-spread, spread);
 	std::cout << "delay: " << delay << " ms" << std::endl;
+	std::cout << "Start time: " << c.getTimeMicroseconds() << " us, ";
 #ifdef WIN32
-		::Sleep(delay);
+	::Sleep(delay);
 #else
-		usleep(1000 * delay);
+	usleep(1000 * delay);
 #endif
+	std::cout << "End time: " << c.getTimeMicroseconds() << " us" << std::endl;
 }
 
 int main(int argc, char* argv[])
@@ -48,7 +52,7 @@ int main(int argc, char* argv[])
 	// To disable profiling, simply comment out the following line.
 	Profiler::init("results.dat", Profiler::BLOCK_CYCLE_SECONDS);
 
-	for (int i = 0; i < 51; ++i)
+	for (int i = 0; i < 31; ++i)
 	{
 		Profiler::beginBlock("block1");
 		approxDelay(100);
