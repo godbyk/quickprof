@@ -31,11 +31,12 @@ int randomIntUniform(int min, int max)
 void approxDelay(int milliseconds)
 {
 	int spread = (int)(0.15 * (double)milliseconds);
+	int delay = milliseconds + randomIntUniform(-spread, spread);
+	std::cout << "delay: " << delay << " ms" << std::endl;
 #ifdef WIN32
-		::Sleep(milliseconds + randomIntUniform(-spread, spread));
+		::Sleep(delay);
 #else
-		usleep(1000 * milliseconds + 1000 * randomIntUniform(
-			-spread, spread));
+		usleep(1000 * delay);
 #endif
 }
 
