@@ -23,9 +23,10 @@
 
 #include "../quickprof.h"
 
-long int randomIntUniform(long int min, long int max)
+int randomIntUniform(int min, int max)
 {
-	return (long int)((max - min + 1) * rand() / (RAND_MAX + 1.0)) + min;
+	double fraction = (double)rand() / (double)(RAND_MAX + 1.0);
+	return (int)((double)(max - min + 1) * fraction) + min;
 }
 
 void approxDelay(int milliseconds)
