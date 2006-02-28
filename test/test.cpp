@@ -61,7 +61,7 @@ int main(int argc, char* argv[])
 	for (int i = 0; i < 10; ++i)
 	{
 		unsigned long int start = c.getTimeMicroseconds();
-		usleep(100);
+		usleep(100000);
 		unsigned long int stop = c.getTimeMicroseconds();
 
 		std::cout << "clock: " << (stop - start) << std::endl;
