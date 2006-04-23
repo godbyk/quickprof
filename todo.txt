@@ -1,0 +1,14 @@
+For Version 0.9
+===============
+
+* Comments from Erwin Coumans:
+
+"I just used quickprof, and it seems to do the job, after some changes.
+- moved stuff into quickprof.cpp, so you can add begin/end profilings in different files (otherwise duplicate linkage).
+- nested blocks
+- exposing iterators, so you can do your on-screen display easier, line by line.
+ 
+Nice to have
+- resetting accumulated percentage after n frames
+ 
+Then I used ';' as delimiter, instead of space, so excel can easier import. This is probably some localization setting, couldn't find it quickly."
