@@ -3,6 +3,14 @@ Copyright (c) 2006 Tyler Streeter
 http://quickprof.sourceforge.net
 
 
+(Next Version)
+============================================================
+
+Change Log
+----------------------------------------------------
+Added the zlib/libpng license option.
+
+
 Version 0.8.0
 ============================================================
 

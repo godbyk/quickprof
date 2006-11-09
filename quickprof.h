@@ -14,11 +14,14 @@
 *       file license-LGPL.txt.                                          *
 *   (2) The BSD-style license that is included with this library in     *
 *       the file license-BSD.txt.                                       *
+*   (3) The zlib/libpng license that is included with this library in   *
+*       the file license-zlib-libpng.txt.                               *
 *                                                                       *
 * This library is distributed in the hope that it will be useful,       *
 * but WITHOUT ANY WARRANTY; without even the implied warranty of        *
 * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the files    *
-* license-LGPL.txt and license-BSD.txt for more details.                *
+* license-LGPL.txt, license-BSD.txt, and license-zlib-libpng.txt for    *
+* more details.                                                         *
 ************************************************************************/
 
 // Please visit the project website (http://quickprof.sourceforge.net) 
