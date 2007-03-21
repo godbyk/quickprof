@@ -590,13 +590,13 @@ namespace quickprof
 			{
 				// On the first iteration, print a header line that shows the 
 				// names of each data column (i.e. profiling block names).
-				mOutputFile << "t(s)" << "\t";
+				mOutputFile << "t(s)";
 
 				std::string suffix = getSuffixString(mPrintFormat);
 				for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
 					++iter)
 				{
-					mOutputFile  << "\t" << (*iter).first << "(" << suffix << ")";
+					mOutputFile  << " " << (*iter).first << "(" << suffix << ")";
 				}
 
 				mOutputFile << std::endl;
@@ -610,7 +610,7 @@ namespace quickprof
 			for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
 				++iter)
 			{
-				mOutputFile << "\t" << getBlockCycleTime((*iter).first, 
+				mOutputFile << " " << getBlockCycleTime((*iter).first, 
 					mPrintFormat);
 			}
 
