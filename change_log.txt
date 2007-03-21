@@ -9,6 +9,8 @@ Version 0.9.0
 
 Change Log
 ----------------------------------------------------
+* 3-21-07: Fixed an invalid reference to Profiler::PERCENT, which didn't cause problems in MSVC (oddly enough) but did in gcc.
+
 * 3-21-07: Changed the Profiler singleton macro from QUICKPROF to PROFILER to make its purpose more clear.
 
 * 3-21-07: Updated the year on all licenses.

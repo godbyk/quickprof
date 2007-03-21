@@ -335,7 +335,7 @@ namespace quickprof
 		@param format The desired time format to use for the results.
 		@return       The timing summary as a string.
 		*/
-		inline std::string getSummary(TimeFormat format=Profiler::PERCENT);
+		inline std::string getSummary(TimeFormat format=PERCENT);
 
 	private:
 		inline Profiler();
