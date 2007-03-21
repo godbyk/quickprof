@@ -1,15 +1,15 @@
-# Doxyfile 1.4.6
+# Doxyfile 1.5.1-p1
 
 #---------------------------------------------------------------------------
 # Project related configuration options
 #---------------------------------------------------------------------------
 PROJECT_NAME           = QuickProf
-PROJECT_NUMBER         = 0.8.0
+PROJECT_NUMBER         = 0.9.0
 OUTPUT_DIRECTORY       = "C:/Documents and Settings/Tyler/Desktop/doxygen_output"
 CREATE_SUBDIRS         = NO
 OUTPUT_LANGUAGE        = English
 USE_WINDOWS_ENCODING   = YES
-BRIEF_MEMBER_DESC      = NO
+BRIEF_MEMBER_DESC      = YES
 REPEAT_BRIEF           = YES
 ABBREVIATE_BRIEF       = "The $name class" \
                          "The $name widget" \
@@ -82,7 +82,8 @@ WARN_LOGFILE           =
 #---------------------------------------------------------------------------
 # configuration options related to the input files
 #---------------------------------------------------------------------------
-INPUT                  = "C:/Documents and Settings/Tyler/Desktop/quickprof/quickprof.h"
+INPUT                  =  \
+                         "C:/Documents and Settings/Tyler/Desktop/quickprof/quickprof.h"
 FILE_PATTERNS          = *.c \
                          *.cc \
                          *.cxx \
@@ -127,6 +128,7 @@ INLINE_SOURCES         = NO
 STRIP_CODE_COMMENTS    = YES
 REFERENCED_BY_RELATION = YES
 REFERENCES_RELATION    = YES
+REFERENCES_LINK_SOURCE = YES
 USE_HTAGS              = NO
 VERBATIM_HEADERS       = YES
 #---------------------------------------------------------------------------
@@ -239,6 +241,7 @@ TEMPLATE_RELATIONS     = NO
 INCLUDE_GRAPH          = YES
 INCLUDED_BY_GRAPH      = YES
 CALL_GRAPH             = NO
+CALLER_GRAPH           = NO
 GRAPHICAL_HIERARCHY    = YES
 DIRECTORY_GRAPH        = YES
 DOT_IMAGE_FORMAT       = png

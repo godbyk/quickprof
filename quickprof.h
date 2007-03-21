@@ -48,13 +48,14 @@
 #endif
 
 /// Use this macro to access the profiler singleton.  For example: 
-/// QUICKPROF.init();
+/// PROFILER.init();
 /// ...
-/// QUICKPROF.beginBlock("foo");
+/// PROFILER.beginBlock("foo");
 /// foo();
-/// QUICKPROF.endBlock("foo");
-#define QUICKPROF quickprof::Profiler::instance()
+/// PROFILER.endBlock("foo");
+#define PROFILER quickprof::Profiler::instance()
 
+/// The main namespace that contains everything.
 namespace quickprof
 {
 	/// A simple data structure representing a single timed block 
@@ -84,6 +85,7 @@ namespace quickprof
 		unsigned long int totalMicroseconds;
 	};
 
+	/// A cross-platform clock class.
 	class Clock
 	{
 	public:
@@ -225,20 +227,9 @@ namespace quickprof
 	/// A set of ways to represent timing results.
 	enum TimeFormat
 	{
-		/// The total time spent in the block (in seconds) since the 
-		/// profiler was initialized.
 		SECONDS,
-
-		/// The total time spent in the block (in ms) since the 
-		/// profiler was initialized.
 		MILLISECONDS,
-
-		/// The total time spent in the block (in us) since the 
-		/// profiler was initialized.
 		MICROSECONDS,
-
-		/// The total time spent in the block, as a % of the total 
-		/// elapsed time since the profiler was initialized.
 		PERCENT
 	};
 
@@ -395,7 +386,7 @@ namespace quickprof
 		/// Internal map of named profile blocks.
 		std::map<std::string, ProfileBlock*> mProfileBlocks;
 
-		/// The data file used if this feature is enabled in 'init.'
+		/// The data output file used if this feature is enabled in init.
 		std::ofstream mOutputFile;
 
 		/// Tracks whether we have begun printing data to the output file.

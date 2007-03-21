@@ -49,36 +49,36 @@ int main(int argc, char* argv[])
 	srand((unsigned int)time(NULL));
 
 	// To disable profiling, simply comment out the following line.
-	QUICKPROF.init(3, "results.dat", 1, quickprof::MILLISECONDS);
+	PROFILER.init(3, "results.dat", 1, quickprof::MILLISECONDS);
 
 	for (int i = 0; i < 30; ++i)
 	{
 		// Note the nested block arrangement here...
 
-		QUICKPROF.beginBlock("blocks1and2");
+		PROFILER.beginBlock("blocks1and2");
 
-		QUICKPROF.beginBlock("block1");
+		PROFILER.beginBlock("block1");
 		approxDelay(100);
-		QUICKPROF.endBlock("block1");
+		PROFILER.endBlock("block1");
 
-		QUICKPROF.beginBlock("block2");
+		PROFILER.beginBlock("block2");
 		approxDelay(200);
-		QUICKPROF.endBlock("block2");
+		PROFILER.endBlock("block2");
 
-		QUICKPROF.endBlock("blocks1and2");
+		PROFILER.endBlock("blocks1and2");
 
-		QUICKPROF.beginBlock("block3");
+		PROFILER.beginBlock("block3");
 		approxDelay(150);
-		QUICKPROF.endBlock("block3");
+		PROFILER.endBlock("block3");
 
 		// Non-profiled code.
 		approxDelay(50);
 
-		QUICKPROF.endCycle();
+		PROFILER.endCycle();
 	}
 
 	// Print the overall averages.
-	std::cout << QUICKPROF.getSummary(quickprof::PERCENT) << std::endl;
+	std::cout << PROFILER.getSummary(quickprof::PERCENT) << std::endl;
 
 	return 0;
 }
