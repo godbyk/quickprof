@@ -1,14 +1,33 @@
 QuickProf
-Copyright (c) 2006 Tyler Streeter
+Copyright (c) 2006-2007 Tyler Streeter
+http://www.tylerstreeter.net
 http://quickprof.sourceforge.net
 
 
-(Next Version)
+Version 0.9.0
 ============================================================
 
 Change Log
 ----------------------------------------------------
-Added the zlib/libpng license option.
+* 3-21-07: Updated the year on all licenses.
+
+* 3-21-07: Fixed the duplicate linkage problem (pointed out by Erwin Coumans) by changing the Profiler from a static class to a standard singleton.
+
+* 3-21-07: Added an exponentially-weighted moving average feature to smooth out timing data over multiple cycles.
+
+* 3-21-07: Streamlined the API to reflect 3 main use cases (simple summary, file output, and real time results).
+
+* 3-21-07: Data output uses tab delimiters instead of spaces to improve readability.
+
+* 3-21-07: Data file output prints the total elapsed time in the first column instead of the profiling cycle #.
+
+* 3-21-07: Replaced sprintf with ostringstream to avoid MSVC warnings.
+
+* 11-9-06: Added the zlib/libpng license option.
+
+Release Notes
+----------------------------------------------------
+In this release the API has been overhauled to reflect the three main use cases: getting a simple summary at the end of execution, saving detailed timing data to an output file, and displaying timing results in real time as the application is running (e.g., for 3D interactive applications).  There is also a new feature that smooths out timing data over multiple cycles using an exponentially-weighted moving average.  Look for more details on bug fixes and other minor changes in the change log for this release.
 
 
 Version 0.8.0

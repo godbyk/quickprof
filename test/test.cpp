@@ -1,7 +1,7 @@
 /************************************************************************
 * QuickProf                                                             *
-* Copyright (C) 2006                                                    *
-* Tyler Streeter  tylerstreeter@gmail.com                               *
+* Copyright (C) 2006-2007                                               *
+* Tyler Streeter  http://www.tylerstreeter.net  tylerstreeter@gmail.com *
 * All rights reserved.                                                  *
 * Web: http://quickprof.sourceforge.net                                 *
 *                                                                       *
@@ -49,33 +49,36 @@ int main(int argc, char* argv[])
 	srand((unsigned int)time(NULL));
 
 	// To disable profiling, simply comment out the following line.
-	Profiler::init("results.dat", Profiler::BLOCK_CYCLE_SECONDS);
+	QUICKPROF.init(3, "results.dat", 1, quickprof::MILLISECONDS);
 
-	for (int i = 0; i < 31; ++i)
+	for (int i = 0; i < 30; ++i)
 	{
-		Profiler::beginBlock("block1");
+		// Note the nested block arrangement here...
+
+		QUICKPROF.beginBlock("blocks1and2");
+
+		QUICKPROF.beginBlock("block1");
 		approxDelay(100);
-		Profiler::endBlock("block1");
+		QUICKPROF.endBlock("block1");
 
-		Profiler::beginBlock("block2");
+		QUICKPROF.beginBlock("block2");
 		approxDelay(200);
-		Profiler::endBlock("block2");
+		QUICKPROF.endBlock("block2");
 
-		Profiler::beginBlock("block3");
-		approxDelay(300);
-		Profiler::endBlock("block3");
+		QUICKPROF.endBlock("blocks1and2");
+
+		QUICKPROF.beginBlock("block3");
+		approxDelay(150);
+		QUICKPROF.endBlock("block3");
 
 		// Non-profiled code.
-		approxDelay(400);
+		approxDelay(50);
 
-		Profiler::endProfilingCycle();
+		QUICKPROF.endCycle();
 	}
 
 	// Print the overall averages.
-	std::cout << Profiler::createStatsString(Profiler::BLOCK_TOTAL_PERCENT) 
-		<< std::endl;
-
-	Profiler::destroy();
+	std::cout << QUICKPROF.getSummary(quickprof::PERCENT) << std::endl;
 
 	return 0;
 }
