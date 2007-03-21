@@ -251,33 +251,39 @@ namespace quickprof
 		is effectively disabled, and all other functions will return 
 		immediately.
 
-		@param movingAvgTimeConstant The measured cycle times for each profile 
-									 block can be averaged across multiple 
-									 cycles, and this parameter defines the 
-									 "smoothness" of this averaging process.
-									 The higher the value, the smoother the 
-									 resulting cycle times will appear.  
-									 Leaving it at zero will essentially 
-									 disable the smoothing effect.  More 
-									 specifically, this parameter is a time 
-									 constant (defined in terms of cycles) that 
-									 defines an exponentially-weighted moving 
-									 average.  For example, a value of 4.0 
-									 means the past four cycles will contribute 
-									 63% of the weighted average.  This value 
-									 must be >= 0.
-		@param outputFilename        If defined, enables timing data to be 
-									 printed to a data file for later analysis.
-		@param printPeriod           Defines how often data is printed to the 
-									 file, in number of profiling cycles.  For 
-									 example, set this to 1 if you want data 
-									 printed after each cycle, or 5 if you want 
-									 it printed every 5 cycles.  This value 
-									 must be >= 1.
-		@param printFormat           Defines the format used when printing data 
-									 to a file.
+		@param smoothing      The measured cycle times for each profile 
+                              block can be averaged across multiple 
+                              cycles, and this parameter defines the 
+                              smoothness of this averaging process.
+                              The higher the value, the smoother the 
+                              resulting cycle times will appear.  
+                              Leaving it at zero will essentially 
+                              disable the smoothing effect.  More 
+                              specifically, this parameter is a time 
+                              constant (defined in terms of cycles) that 
+                              defines an exponentially-weighted moving 
+                              average.  For example, a value of 4.0 
+                              means the past four cycles will contribute 
+                              63% of the current weighted average.  This 
+                              value must be >= 0.
+		@param outputFilename If defined, enables timing data to be 
+                              printed to a data file for later analysis.
+		@param printPeriod    Defines how often data is printed to the 
+                              file, in number of profiling cycles.  For 
+                              example, set this to 1 if you want data 
+                              printed after each cycle, or 5 if you want 
+                              it printed every 5 cycles.  It is a good 
+                              idea to increase this if you don't want 
+                              huge data files.  Keep in mind, however, 
+                              that when you increase this, you might 
+                              want to increase the smoothing 
+                              parameter.  (A good heuristic is to set 
+                              the smoothing parameter equal to the 
+                              print period.)  This value must be >= 1.
+		@param printFormat    Defines the format used when printing data 
+                              to a file.
 		*/
-		inline void init(double movingAvgTimeConstant=0.0, 
+		inline void init(double smoothing=0.0, 
 			const std::string outputFilename="", size_t printPeriod=1,
 			TimeFormat printFormat=MILLISECONDS);
 
@@ -444,9 +450,8 @@ namespace quickprof
 		}
 	}
 
-	void Profiler::init(double movingAvgTimeConstant, 
-		const std::string outputFilename, size_t printPeriod, 
-		TimeFormat printFormat)
+	void Profiler::init(double smoothing, const std::string outputFilename, 
+		size_t printPeriod, TimeFormat printFormat)
 	{
 		if (mEnabled)
 		{
@@ -456,18 +461,19 @@ namespace quickprof
 
 		mEnabled = true;
 
-		if (movingAvgTimeConstant <= 0)
+		if (smoothing <= 0)
 		{
-			if (movingAvgTimeConstant < 0)
+			if (smoothing < 0)
 			{
-				printError("Moving avg time constant must be >= 0. Using 0.");
+				printError("Smoothing parameter must be >= 0. Using 0.");
 			}
 
 			mMovingAvgScalar = 0;
 		}
 		else
 		{
-			mMovingAvgScalar = ::exp(-1 / movingAvgTimeConstant);
+			// Treat smoothing as a time constant.
+			mMovingAvgScalar = ::exp(-1 / smoothing);
 		}
 
 		if (!outputFilename.empty())
@@ -590,7 +596,7 @@ namespace quickprof
 			{
 				// On the first iteration, print a header line that shows the 
 				// names of each data column (i.e. profiling block names).
-				mOutputFile << "t(s)";
+				mOutputFile << "# t(s)";
 
 				std::string suffix = getSuffixString(mPrintFormat);
 				for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
