@@ -251,12 +251,12 @@ namespace quickprof
 		is effectively disabled, and all other functions will return 
 		immediately.
 
-		@param smoothing      The measured cycle times for each profile 
+		@param smoothing      The measured duration for each profile 
                               block can be averaged across multiple 
                               cycles, and this parameter defines the 
                               smoothness of this averaging process.
                               The higher the value, the smoother the 
-                              resulting cycle times will appear.  
+                              resulting average durations will appear.  
                               Leaving it at zero will essentially 
                               disable the smoothing effect.  More 
                               specifically, this parameter is a time 
@@ -312,28 +312,16 @@ namespace quickprof
 		inline void endCycle();
 
 		/**
-		Returns the time spent in the named block since the profiler was 
-		initialized.
-
-		@param name   The name of the block.
-		@param format The desired time format to use for the result.
-		@return       The block total time.
-		*/
-		inline double getBlockTotalTime(const std::string& name, 
-			TimeFormat format);
-
-		/**
-		Returns the time spent in the named block in the most recent 
-		profiling cycle. 
+		Returns the average time used in the named block per profiling cycle.
 		
-		If smoothing is enabled (see init), this returns the smoothed 
-		average of the block's cycle time.
+		If smoothing is disabled (see init), this returns the most recent 
+		duration measurement.
 
 		@param name   The name of the block.
 		@param format The desired time format to use for the result.
-		@return       The block cycle time.
+		@return       The block's average duration per cycle.
 		*/
-		inline double getBlockCycleTime(const std::string& name, 
+		inline double getAvgDuration(const std::string& name, 
 			TimeFormat format);
 
 		/**
@@ -363,6 +351,17 @@ namespace quickprof
 		@return     The named ProfileBlock, or NULL if it can't be found.
 		*/
 		inline ProfileBlock* getProfileBlock(const std::string& name);
+
+		/**
+		Returns the time spent in the named block since the profiler was 
+		initialized.
+
+		@param name   The name of the block.
+		@param format The desired time format to use for the result.
+		@return       The block total time.
+		*/
+		inline double getBlockTotalTime(const std::string& name, 
+			TimeFormat format);
 
 		/**
 		Computes the elapsed time since the profiler was initialized.
@@ -617,7 +616,7 @@ namespace quickprof
 			for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
 				++iter)
 			{
-				mOutputFile << " " << getBlockCycleTime((*iter).first, 
+				mOutputFile << " " << getAvgDuration((*iter).first, 
 					mPrintFormat);
 			}
 
@@ -677,7 +676,7 @@ namespace quickprof
 		return result;
 	}
 
-	double Profiler::getBlockCycleTime(const std::string& name, 
+	double Profiler::getAvgDuration(const std::string& name, 
 		TimeFormat format)
 	{
 		if (!mEnabled)

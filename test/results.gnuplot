@@ -4,7 +4,7 @@ set terminal png medium xffffff
 
 set xlabel "Elapsed Real Time (seconds)"
 
-set ylabel "Cycle Duration (milliseconds)"
+set ylabel "Avg Duration (milliseconds)"
 set output "results.png"
 plot "results.dat" using 1:2 title "blocks1" with lines linewidth 4, \
 	"results.dat" using 1:3 title "block2" with lines linewidth 4, \
