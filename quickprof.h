@@ -327,7 +327,7 @@ namespace quickprof
 		profiling cycle. 
 		
 		If smoothing is enabled (see init), this returns the smoothed 
-		average of the block's time.
+		average of the block's cycle time.
 
 		@param name   The name of the block.
 		@param format The desired time format to use for the result.
