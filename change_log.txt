@@ -7,6 +7,10 @@ http://quickprof.sourceforge.net
 Version 0.9.0
 ============================================================
 
+Release Notes
+----------------------------------------------------
+In this release the API has been overhauled to reflect the three main use cases: getting a simple summary at the end of execution, saving detailed timing data to an output file, and displaying timing results in real time as the application is running (e.g., for 3D interactive applications).  There is also a new feature that smooths out timing data over multiple cycles using an exponentially-weighted moving average.  Look for more details on bug fixes and other minor changes in the change log for this release.
+
 Change Log
 ----------------------------------------------------
 * 3-21-07: Renamed getBlockCycleTime to getAvgDuration to improve clarity.  Also made getBlockTotalTime private since it doesn't seem to fit any of the use cases.
@@ -35,13 +39,13 @@ Change Log
 
 * 11-9-06: Added the zlib/libpng license option.
 
-Release Notes
-----------------------------------------------------
-In this release the API has been overhauled to reflect the three main use cases: getting a simple summary at the end of execution, saving detailed timing data to an output file, and displaying timing results in real time as the application is running (e.g., for 3D interactive applications).  There is also a new feature that smooths out timing data over multiple cycles using an exponentially-weighted moving average.  Look for more details on bug fixes and other minor changes in the change log for this release.
-
 
 Version 0.8.0
 ============================================================
+
+Release Notes
+----------------------------------------------------
+Initial version.
 
 Change Log
 ----------------------------------------------------

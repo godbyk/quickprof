@@ -27,9 +27,6 @@
 // Please visit the project website (http://quickprof.sourceforge.net) 
 // for usage instructions.
 
-// Credits: The Clock class was inspired by the Timer classes in 
-// Ogre (www.ogre3d.org).
-
 #ifndef QUICK_PROF_H
 #define QUICK_PROF_H
 
@@ -85,7 +82,8 @@ namespace quickprof
 		unsigned long int totalMicroseconds;
 	};
 
-	/// A cross-platform clock class.
+	/// A cross-platform clock class inspired by the Timer classes in 
+	/// Ogre (http://www.ogre3d.org).
 	class Clock
 	{
 	public:
