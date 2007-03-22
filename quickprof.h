@@ -304,9 +304,10 @@ namespace quickprof
 		/**
 		Defines the end of a profiling cycle. 
 
-		Use this regularly by calling it at the end of all timing blocks if you 
-		want to generate detailed timing information.  This must not be called 
-		within a timing block.
+		Use this regularly by calling it at the end of all timing blocks.  
+		This is necessary for smoothing and for file output, but not if 
+		you just want a total summary at the end of execution (i.e. from 
+		getSummary).  This must not be called within a timing block.
 		*/
 		inline void endCycle();
 
@@ -325,7 +326,7 @@ namespace quickprof
 		Returns the time spent in the named block in the most recent 
 		profiling cycle. 
 		
-		If moving averages are enabled (see init), this returns the moving 
+		If smoothing is enabled (see init), this returns the smoothed 
 		average of the block's time.
 
 		@param name   The name of the block.
