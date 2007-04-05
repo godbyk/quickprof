@@ -68,18 +68,18 @@ namespace quickprof
 		}
 
 		/// The starting time (in us) of the current block update.
-		unsigned long int currentBlockStartMicroseconds;
+		unsigned long long int currentBlockStartMicroseconds;
 
 		/// The accumulated time (in us) spent in this block during the 
 		/// current profiling cycle.
-		unsigned long int currentCycleTotalMicroseconds;
+		unsigned long long int currentCycleTotalMicroseconds;
 
 		/// The accumulated time (in us) spent in this block during the 
 		/// past profiling cycle.
 		double avgCycleTotalMicroseconds;
 
 		/// The total accumulated time (in us) spent in this block.
-		unsigned long int totalMicroseconds;
+		unsigned long long int totalMicroseconds;
 	};
 
 	/// A cross-platform clock class inspired by the Timer classes in 
@@ -119,7 +119,7 @@ namespace quickprof
 
 		@return The requested time in milliseconds.
 		*/
-		unsigned long int getTimeMilliseconds()
+		unsigned long long int getTimeMilliseconds()
 		{
 #ifdef USE_WINDOWS_TIMERS
 			LARGE_INTEGER currentTime;
@@ -128,13 +128,13 @@ namespace quickprof
 				mStartTime.QuadPart;
 
 			// Compute the number of millisecond ticks elapsed.
-			unsigned long msecTicks = (unsigned long)(1000 * elapsedTime / 
-				mClockFrequency.QuadPart);
+			unsigned long long msecTicks = (unsigned long long)(1000 * 
+				elapsedTime / mClockFrequency.QuadPart);
 
 			// Check for unexpected leaps in the Win32 performance counter.  
 			// (This is caused by unexpected data across the PCI to ISA 
 			// bridge, aka south bridge.  See Microsoft KB274323.)
-			unsigned long elapsedTicks = GetTickCount() - mStartTick;
+			unsigned long long elapsedTicks = GetTickCount() - mStartTick;
 			signed long msecOff = (signed long)(msecTicks - elapsedTicks);
 			if (msecOff < -100 || msecOff > 100)
 			{
@@ -146,7 +146,7 @@ namespace quickprof
 				elapsedTime -= msecAdjustment;
 
 				// Recompute the number of millisecond ticks elapsed.
-				msecTicks = (unsigned long)(1000 * elapsedTime / 
+				msecTicks = (unsigned long long)(1000 * elapsedTime / 
 					mClockFrequency.QuadPart);
 			}
 
@@ -168,7 +168,7 @@ namespace quickprof
 
 		@return The requested time in microseconds.
 		*/
-		unsigned long int getTimeMicroseconds()
+		unsigned long long int getTimeMicroseconds()
 		{
 #ifdef USE_WINDOWS_TIMERS
 			LARGE_INTEGER currentTime;
@@ -177,13 +177,13 @@ namespace quickprof
 				mStartTime.QuadPart;
 
 			// Compute the number of millisecond ticks elapsed.
-			unsigned long msecTicks = (unsigned long)(1000 * elapsedTime / 
-				mClockFrequency.QuadPart);
+			unsigned long long msecTicks = (unsigned long long)(1000 * 
+				elapsedTime / mClockFrequency.QuadPart);
 
 			// Check for unexpected leaps in the Win32 performance counter.  
 			// (This is caused by unexpected data across the PCI to ISA 
 			// bridge, aka south bridge.  See Microsoft KB274323.)
-			unsigned long elapsedTicks = GetTickCount() - mStartTick;
+			unsigned long long elapsedTicks = GetTickCount() - mStartTick;
 			signed long msecOff = (signed long)(msecTicks - elapsedTicks);
 			if (msecOff < -100 || msecOff > 100)
 			{
@@ -199,8 +199,8 @@ namespace quickprof
 			mPrevElapsedTime = elapsedTime;
 
 			// Convert to microseconds.
-			unsigned long usecTicks = (unsigned long)(1000000 * elapsedTime / 
-				mClockFrequency.QuadPart);
+			unsigned long long usecTicks = (unsigned long long)(1000000 * 
+				elapsedTime / mClockFrequency.QuadPart);
 
 			return usecTicks;
 #else
@@ -382,10 +382,10 @@ namespace quickprof
 		Clock mClock;
 
 		/// The starting time (in us) of the current profiling cycle.
-		unsigned long int mCurrentCycleStartMicroseconds;
+		unsigned long long int mCurrentCycleStartMicroseconds;
 
 		/// The duration (in us) of the most recent profiling cycle.
-		unsigned long int mLastCycleDurationMicroseconds;
+		unsigned long long int mLastCycleDurationMicroseconds;
 
 		/// Internal map of named profile blocks.
 		std::map<std::string, ProfileBlock*> mProfileBlocks;
@@ -530,7 +530,7 @@ namespace quickprof
 		}
 
 		// We do this at the beginning to get more accurate results.
-		unsigned long int endTick = mClock.getTimeMicroseconds();
+		unsigned long long int endTick = mClock.getTimeMicroseconds();
 
 		ProfileBlock* block = getProfileBlock(name);
 		if (!block)
@@ -538,7 +538,7 @@ namespace quickprof
 			return;
 		}
 
-		unsigned long int blockDuration = endTick - 
+		unsigned long long int blockDuration = endTick - 
 			block->currentBlockStartMicroseconds;
 		block->currentCycleTotalMicroseconds += blockDuration;
 		block->totalMicroseconds += blockDuration;
