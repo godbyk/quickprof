@@ -1,9 +1,2 @@
 Plans for Next Version
 ======================
-* avoid problem with GetTickCount() wrapping to zero after 47 days:
-	if (GetTickCount() < mStartTick)
-	{
-		mStartTick = GetTickCount();
-	}
-
-* figure out why the output time values go crazy... after 3300 seconds, it prints 1.84467e+013 for the time on each line until t=4300 seconds, then it starts t back at zero.

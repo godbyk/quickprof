@@ -107,7 +107,7 @@ namespace quickprof
 #ifdef USE_WINDOWS_TIMERS
 			QueryPerformanceCounter(&mStartTime);
 			mStartTick = GetTickCount();
-			mPrevElapsedTime = 0;
+			mPrevClockCycles = 0;
 #else
 			gettimeofday(&mStartTime, NULL);
 #endif
@@ -117,97 +117,75 @@ namespace quickprof
 		Returns the time in us since the last call to reset or since 
 		the Clock was created.
 
-		@return The requested time in milliseconds.
-		*/
-		unsigned long long int getTimeMilliseconds()
-		{
-#ifdef USE_WINDOWS_TIMERS
-			LARGE_INTEGER currentTime;
-			QueryPerformanceCounter(&currentTime);
-			LONGLONG elapsedTime = currentTime.QuadPart - 
-				mStartTime.QuadPart;
-
-			// Compute the number of millisecond ticks elapsed.
-			unsigned long long msecTicks = (unsigned long long)(1000 * 
-				elapsedTime / mClockFrequency.QuadPart);
-
-			// Check for unexpected leaps in the Win32 performance counter.  
-			// (This is caused by unexpected data across the PCI to ISA 
-			// bridge, aka south bridge.  See Microsoft KB274323.)
-			unsigned long long elapsedTicks = GetTickCount() - mStartTick;
-			signed long msecOff = (signed long)(msecTicks - elapsedTicks);
-			if (msecOff < -100 || msecOff > 100)
-			{
-				// Adjust the starting time forwards.
-				LONGLONG msecAdjustment = (std::min)(msecOff * 
-					mClockFrequency.QuadPart / 1000, elapsedTime - 
-					mPrevElapsedTime);
-				mStartTime.QuadPart += msecAdjustment;
-				elapsedTime -= msecAdjustment;
-
-				// Recompute the number of millisecond ticks elapsed.
-				msecTicks = (unsigned long long)(1000 * elapsedTime / 
-					mClockFrequency.QuadPart);
-			}
-
-			// Store the current elapsed time for adjustments next time.
-			mPrevElapsedTime = elapsedTime;
-
-			return msecTicks;
-#else
-			struct timeval currentTime;
-			gettimeofday(&currentTime, NULL);
-			return (currentTime.tv_sec - mStartTime.tv_sec) * 1000 + 
-				(currentTime.tv_usec - mStartTime.tv_usec) / 1000;
-#endif
-		}
-
-		/**
-		Returns the time in us since the last call to reset or since 
-		the Clock was created.
-
-		@return The requested time in microseconds.
+		@return The requested time in microseconds.  Assuming 64-bit 
+                integers are available, the return value is valid for 2^63 
+                clock cycles (over 104 years w/ clock frequency 2.8 GHz).
 		*/
 		unsigned long long int getTimeMicroseconds()
 		{
 #ifdef USE_WINDOWS_TIMERS
+			// Compute the number of elapsed clock cycles since the 
+			// clock was created/reset.  Using 64-bit signed ints, this 
+			// is valid for 2^63 clock cycles (over 104 years w/ clock 
+			// frequency 2.8 GHz).
 			LARGE_INTEGER currentTime;
 			QueryPerformanceCounter(&currentTime);
-			LONGLONG elapsedTime = currentTime.QuadPart - 
+			LONGLONG clockCycles = currentTime.QuadPart - 
 				mStartTime.QuadPart;
 
-			// Compute the number of millisecond ticks elapsed.
-			unsigned long long msecTicks = (unsigned long long)(1000 * 
-				elapsedTime / mClockFrequency.QuadPart);
+			// Compute the total elapsed seconds.  This is valid for 2^63 
+			// clock cycles (over 104 years w/ clock frequency 2.8 GHz).
+			LONGLONG sec = clockCycles / mClockFrequency.QuadPart;
 
 			// Check for unexpected leaps in the Win32 performance counter.  
 			// (This is caused by unexpected data across the PCI to ISA 
-			// bridge, aka south bridge.  See Microsoft KB274323.)
-			unsigned long long elapsedTicks = GetTickCount() - mStartTick;
-			signed long msecOff = (signed long)(msecTicks - elapsedTicks);
-			if (msecOff < -100 || msecOff > 100)
+			// bridge, aka south bridge.  See Microsoft KB274323.)  Avoid 
+			// the problem with GetTickCount() wrapping to zero after 47 
+			// days (because it uses 32-bit unsigned ints to represent 
+			// milliseconds).
+			LONGLONG msec1 = sec * 1000 + (clockCycles - sec * 
+				mClockFrequency.QuadPart) * 1000 / mClockFrequency.QuadPart;
+			DWORD tickCount = GetTickCount();
+			if (tickCount < mStartTick)
+			{
+				mStartTick = tickCount;
+			}
+			LONGLONG msec2 = (LONGLONG)(tickCount - mStartTick);
+			LONGLONG msecDiff = msec1 - msec2;
+			if (msecDiff < -100 || msecDiff > 100)
 			{
 				// Adjust the starting time forwards.
-				LONGLONG msecAdjustment = (std::min)(msecOff * 
-					mClockFrequency.QuadPart / 1000, elapsedTime - 
-					mPrevElapsedTime);
-				mStartTime.QuadPart += msecAdjustment;
-				elapsedTime -= msecAdjustment;
+				LONGLONG adjustment = (std::min)(msecDiff * 
+					mClockFrequency.QuadPart / 1000, clockCycles - 
+					mPrevClockCycles);
+				mStartTime.QuadPart += adjustment;
+				clockCycles -= adjustment;
+
+				// Update the measured seconds with the adjustments.
+				sec = clockCycles / mClockFrequency.QuadPart;
 			}
 
-			// Store the current elapsed time for adjustments next time.
-			mPrevElapsedTime = elapsedTime;
+			// Compute the milliseconds part.  This is always valid since 
+			// it will never be greater than 1000000.
+			LONGLONG usec = (clockCycles - sec * mClockFrequency.QuadPart) * 
+				1000000 / mClockFrequency.QuadPart;
 
-			// Convert to microseconds.
-			unsigned long long usecTicks = (unsigned long long)(1000000 * 
-				elapsedTime / mClockFrequency.QuadPart);
+			// Store the current elapsed clock cycles for adjustments next 
+			// time.
+			mPrevClockCycles = clockCycles;
 
-			return usecTicks;
+			// The return value here is valid for 2^63 clock cycles (over 
+			// 104 years w/ clock frequency 2.8 GHz).
+			return sec * 1000000 + usec;
 #else
+			// Assuming signed 32-bit integers for tv_sec and tv_usec, and 
+			// casting the seconds difference to a 64-bit unsigned long long 
+			// int, the return value here is valid for over 136 years.
 			struct timeval currentTime;
 			gettimeofday(&currentTime, NULL);
-			return (currentTime.tv_sec - mStartTime.tv_sec) * 1000000 + 
-				(currentTime.tv_usec - mStartTime.tv_usec);
+			return (unsigned long long int)(currentTime.tv_sec - 
+				mStartTime.tv_sec) * 1000000 + (currentTime.tv_usec - 
+				mStartTime.tv_usec);
 #endif
 		}
 
@@ -215,7 +193,7 @@ namespace quickprof
 #ifdef USE_WINDOWS_TIMERS
 		LARGE_INTEGER mClockFrequency;
 		DWORD mStartTick;
-		LONGLONG mPrevElapsedTime;
+		LONGLONG mPrevClockCycles;
 		LARGE_INTEGER mStartTime;
 #else
 		struct timeval mStartTime;
