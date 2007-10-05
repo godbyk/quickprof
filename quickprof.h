@@ -362,8 +362,10 @@ namespace quickprof
 		/// The starting time (in us) of the current profiling cycle.
 		unsigned long long int mCurrentCycleStartMicroseconds;
 
-		/// The duration (in us) of the most recent profiling cycle.
-		unsigned long long int mLastCycleDurationMicroseconds;
+		/// The average profiling cycle duration (in us).  If smoothing is 
+		/// disabled, this is the same as the duration of the most recent 
+		/// cycle.
+		double mAvgCycleDurationMicroseconds;
 
 		/// Internal map of named profile blocks.
 		std::map<std::string, ProfileBlock*> mProfileBlocks;
@@ -402,7 +404,7 @@ namespace quickprof
 	{
 		mEnabled = false;
 		mCurrentCycleStartMicroseconds = 0;
-		mLastCycleDurationMicroseconds = 0;
+		mAvgCycleDurationMicroseconds = 0;
 		mFirstFileOutput = true;
 		mMovingAvgScalar = 0;
 		mPrintPeriod = 1;
@@ -529,9 +531,23 @@ namespace quickprof
 			return;
 		}
 
-		// Store the duration of the cycle that just finished.
-		mLastCycleDurationMicroseconds = mClock.getTimeMicroseconds() - 
-			mCurrentCycleStartMicroseconds;
+		// Update the average total cycle time.
+		// On the first cycle we set the average cycle time equal to the 
+		// measured cycle time.  This avoids having to ramp up the average 
+		// from zero initially.
+		unsigned long long int currentCycleDurationMicroseconds = 
+			mClock.getTimeMicroseconds() - mCurrentCycleStartMicroseconds;
+		if (mFirstCycle)
+		{
+			mAvgCycleDurationMicroseconds = 
+				(double)currentCycleDurationMicroseconds;
+		}
+		else
+		{
+			mAvgCycleDurationMicroseconds = mMovingAvgScalar * 
+				mAvgCycleDurationMicroseconds + (1 - mMovingAvgScalar) 
+				* (double)currentCycleDurationMicroseconds;
+		}
 
 		// Update the average cycle time for each block.
 		std::map<std::string, ProfileBlock*>::iterator iter;
@@ -550,8 +566,7 @@ namespace quickprof
 			else
 			{
 				block->avgCycleTotalMicroseconds = mMovingAvgScalar * 
-					(double)block->avgCycleTotalMicroseconds + (1 - 
-					mMovingAvgScalar) * 
+					block->avgCycleTotalMicroseconds + (1 - mMovingAvgScalar) * 
 					(double)block->currentCycleTotalMicroseconds;
 			}
 
@@ -681,14 +696,14 @@ namespace quickprof
 				break;
 			case PERCENT:
 			{
-				if (0 == mLastCycleDurationMicroseconds)
+				if (0 == mAvgCycleDurationMicroseconds)
 				{
 					result = 0;
 				}
 				else
 				{
 					result = 100.0 * block->avgCycleTotalMicroseconds / 
-						mLastCycleDurationMicroseconds;
+						mAvgCycleDurationMicroseconds;
 				}
 				break;
 			}
