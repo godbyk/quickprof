@@ -489,13 +489,19 @@ namespace quickprof
 			return;
 		}
 
-		ProfileBlock* block = mProfileBlocks[name];
+		ProfileBlock* block = NULL;
 
-		if (!block)
+		std::map<std::string, ProfileBlock*>::iterator iter = 
+			mProfileBlocks.find(name);
+		if (mProfileBlocks.end() == iter)
 		{
-			// Create a new ProfileBlock.
+			// The named block does not exist.  Create a new ProfileBlock.
 			mProfileBlocks[name] = new ProfileBlock();
 			block = mProfileBlocks[name];
+		}
+		else
+		{
+			block = iter->second;
 		}
 
 		// We do this at the end to get more accurate results.
@@ -749,16 +755,19 @@ namespace quickprof
 
 	ProfileBlock* Profiler::getProfileBlock(const std::string& name)
 	{
-		ProfileBlock* block = mProfileBlocks[name];
-
-		if (!block)
+		std::map<std::string, ProfileBlock*>::iterator iter = 
+			mProfileBlocks.find(name);
+		if (mProfileBlocks.end() == iter)
 		{
 			// The named block does not exist.  Print an error.
 			printError("The profile block named '" + name + 
 				"' does not exist.");
+			return NULL;
 		}
-
-		return block;
+		else
+		{
+			return iter->second;
+		}
 	}
 
 	double Profiler::getMicrosecondsSinceInit()
