@@ -496,8 +496,8 @@ namespace quickprof
 		if (mProfileBlocks.end() == iter)
 		{
 			// The named block does not exist.  Create a new ProfileBlock.
-			mProfileBlocks[name] = new ProfileBlock();
-			block = mProfileBlocks[name];
+			block = new ProfileBlock();
+			mProfileBlocks[name] = block;
 		}
 		else
 		{
@@ -556,10 +556,14 @@ namespace quickprof
 		}
 
 		// Update the average cycle time for each block.
-		std::map<std::string, ProfileBlock*>::iterator iter;
-		for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); ++iter)
+		std::map<std::string, ProfileBlock*>::iterator blocksBegin = 
+			mProfileBlocks.begin();
+		std::map<std::string, ProfileBlock*>::iterator blocksEnd = 
+			mProfileBlocks.end();
+		std::map<std::string, ProfileBlock*>::iterator iter = blocksBegin;
+		for (; iter != blocksEnd; ++iter)
 		{
-			ProfileBlock* block = (*iter).second;
+			ProfileBlock* block = iter->second;
 
 			// On the first cycle we set the average cycle time equal to the 
 			// measured cycle time.  This avoids having to ramp up the average 
@@ -596,8 +600,7 @@ namespace quickprof
 				mOutputFile << "# t(s)";
 
 				std::string suffix = getSuffixString(mPrintFormat);
-				for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
-					++iter)
+				for (iter = blocksBegin; iter != blocksEnd; ++iter)
 				{
 					mOutputFile  << " " << (*iter).first << "(" << suffix << ")";
 				}
@@ -610,8 +613,7 @@ namespace quickprof
 			mOutputFile << getMicrosecondsSinceInit() * (double)0.000001;
 
 			// Print the cycle time for each block.
-			for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); 
-				++iter)
+			for (iter = blocksBegin; iter != blocksEnd; ++iter)
 			{
 				mOutputFile << " " << getAvgDuration((*iter).first, 
 					mPrintFormat);
@@ -730,17 +732,21 @@ namespace quickprof
 		std::ostringstream oss;
 		std::string suffix = getSuffixString(format);
 
-		std::map<std::string, ProfileBlock*>::iterator iter;
-		for (iter = mProfileBlocks.begin(); iter != mProfileBlocks.end(); ++iter)
+		std::map<std::string, ProfileBlock*>::iterator blocksBegin = 
+			mProfileBlocks.begin();
+		std::map<std::string, ProfileBlock*>::iterator blocksEnd = 
+			mProfileBlocks.end();
+		std::map<std::string, ProfileBlock*>::iterator iter = blocksBegin;
+		for (; iter != blocksEnd; ++iter)
 		{
-			if (iter != mProfileBlocks.begin())
+			if (iter != blocksBegin)
 			{
 				oss << "\n";
 			}
 
-			oss << (*iter).first;
+			oss << iter->first;
 			oss << ": ";
-			oss << getBlockTotalTime((*iter).first, format);
+			oss << getBlockTotalTime(iter->first, format);
 			oss << " ";
 			oss << suffix;
 		}
