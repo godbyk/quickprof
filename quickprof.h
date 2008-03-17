@@ -225,7 +225,9 @@ namespace quickprof
 
 		This must be called first.  If this is never called, the profiler 
 		is effectively disabled, and all other functions will return 
-		immediately.
+		immediately.  This can be called more than once to re-initialize the 
+		profiler, which erases all previous profiling block names and their 
+		timing data.
 
 		@param smoothing      The measured duration for each profile 
                               block can be averaged across multiple 
@@ -301,6 +303,25 @@ namespace quickprof
 			TimeFormat format);
 
 		/**
+		Returns the total time spent in the named block since the profiler was 
+		initialized.
+
+		@param name   The name of the block.
+		@param format The desired time format to use for the result.
+		@return       The block total time.
+		*/
+		inline double getTotalDuration(const std::string& name, 
+			TimeFormat format);
+
+		/**
+		Computes the elapsed time since the profiler was initialized.
+
+		@param format The desired time format to use for the result.
+		@return The elapsed time.
+		*/
+		inline double getTimeSinceInit(TimeFormat format);
+
+		/**
 		Returns a summary of total times in each block.
 
 		@param format The desired time format to use for the results.
@@ -312,6 +333,15 @@ namespace quickprof
 		inline Profiler();
 
 		inline ~Profiler();
+
+		/**
+		Returns everything to its initial state.
+
+		Deallocates memory, closes output files, and resets all variables.  
+		This is called when the profiler is re-initialized and when the 
+		process exits.
+		*/
+		inline void destroy();
 
 		/**
 		Prints an error message to standard output.
@@ -327,24 +357,6 @@ namespace quickprof
 		@return     The named ProfileBlock, or NULL if it can't be found.
 		*/
 		inline ProfileBlock* getProfileBlock(const std::string& name);
-
-		/**
-		Returns the time spent in the named block since the profiler was 
-		initialized.
-
-		@param name   The name of the block.
-		@param format The desired time format to use for the result.
-		@return       The block total time.
-		*/
-		inline double getBlockTotalTime(const std::string& name, 
-			TimeFormat format);
-
-		/**
-		Computes the elapsed time since the profiler was initialized.
-
-		@return The elapsed time in microseconds.
-		*/
-		inline double getMicrosecondsSinceInit();
 
 		/**
 		Returns the appropriate suffix string for the given time format.
@@ -415,17 +427,33 @@ namespace quickprof
 
 	Profiler::~Profiler()
 	{
-		if (mOutputFile.is_open())
-		{
-			mOutputFile.close();
-		}
+		// This is called when the program exits because the singleton 
+		// instance is static.
 
-		// Destroy all ProfileBlocks.
+		destroy();
+	}
+
+	void Profiler::destroy()
+	{
+		mEnabled = false;
+		mClock.reset();
+		mCurrentCycleStartMicroseconds = 0;
+		mAvgCycleDurationMicroseconds = 0;
 		while (!mProfileBlocks.empty())
 		{
 			delete (*mProfileBlocks.begin()).second;
 			mProfileBlocks.erase(mProfileBlocks.begin());
 		}
+		if (mOutputFile.is_open())
+		{
+			mOutputFile.close();
+		}
+		mFirstFileOutput = true;
+		mMovingAvgScalar = 0;
+		mPrintPeriod = 1;
+		mPrintFormat = SECONDS;
+		mCycleCounter = 0;
+		mFirstCycle = true;
 	}
 
 	void Profiler::init(double smoothing, const std::string outputFilename, 
@@ -433,8 +461,10 @@ namespace quickprof
 	{
 		if (mEnabled)
 		{
-			printError("Cannot init the profiler multiple times.");
-			return;
+			// Reset everything to its initial state and re-initialize.
+			destroy();
+			std::cout << "[QuickProf] Re-initializing profiler, " 
+				<< "erasing all profiling blocks" << std::endl;
 		}
 
 		mEnabled = true;
@@ -609,8 +639,7 @@ namespace quickprof
 				mFirstFileOutput = false;
 			}
 
-			// Print the total elapsed time in seconds.
-			mOutputFile << getMicrosecondsSinceInit() * (double)0.000001;
+			mOutputFile << getTimeSinceInit(SECONDS) * (double)0.000001;
 
 			// Print the cycle time for each block.
 			for (iter = blocksBegin; iter != blocksEnd; ++iter)
@@ -624,55 +653,6 @@ namespace quickprof
 
 		++mCycleCounter;
 		mCurrentCycleStartMicroseconds = mClock.getTimeMicroseconds();
-	}
-
-	double Profiler::getBlockTotalTime(const std::string& name, 
-		TimeFormat format)
-	{
-		if (!mEnabled)
-		{
-			return 0;
-		}
-
-		ProfileBlock* block = getProfileBlock(name);
-		if (!block)
-		{
-			return 0;
-		}
-
-		double blockTotalMicroseconds = (double)block->totalMicroseconds;
-		double result = 0;
-
-		switch(format)
-		{
-			case SECONDS:
-				result = blockTotalMicroseconds * (double)0.000001;
-				break;
-			case MILLISECONDS:
-				result = blockTotalMicroseconds * (double)0.001;
-				break;
-			case MICROSECONDS:
-				result = blockTotalMicroseconds;
-				break;
-			case PERCENT:
-				{
-					double microsecondsSinceInit = getMicrosecondsSinceInit();
-					if (0 == microsecondsSinceInit)
-					{
-						result = 0;
-					}
-					else
-					{
-						result = 100.0 * blockTotalMicroseconds / 
-							microsecondsSinceInit;
-					}
-				}
-				break;
-			default:
-				break;
-		}
-
-		return result;
 	}
 
 	double Profiler::getAvgDuration(const std::string& name, 
@@ -722,6 +702,87 @@ namespace quickprof
 		return result;
 	}
 
+	double Profiler::getTotalDuration(const std::string& name, 
+		TimeFormat format)
+	{
+		if (!mEnabled)
+		{
+			return 0;
+		}
+
+		ProfileBlock* block = getProfileBlock(name);
+		if (!block)
+		{
+			return 0;
+		}
+
+		double blockTotalMicroseconds = (double)block->totalMicroseconds;
+		double result = 0;
+
+		switch(format)
+		{
+			case SECONDS:
+				result = blockTotalMicroseconds * (double)0.000001;
+				break;
+			case MILLISECONDS:
+				result = blockTotalMicroseconds * (double)0.001;
+				break;
+			case MICROSECONDS:
+				result = blockTotalMicroseconds;
+				break;
+			case PERCENT:
+				{
+					double microsecondsSinceInit = getTimeSinceInit(MICROSECONDS);
+					if (0 == microsecondsSinceInit)
+					{
+						result = 0;
+					}
+					else
+					{
+						result = 100.0 * blockTotalMicroseconds / 
+							microsecondsSinceInit;
+					}
+				}
+				break;
+			default:
+				break;
+		}
+
+		return result;
+	}
+
+	double Profiler::getTimeSinceInit(TimeFormat format)
+	{
+		double timeSinceInit = 0;
+
+		switch(format)
+		{
+			case SECONDS:
+				timeSinceInit = (double)mClock.getTimeMicroseconds() * (double)0.000001;
+				break;
+			case MILLISECONDS:
+				timeSinceInit = (double)mClock.getTimeMicroseconds() * (double)0.001;
+				break;
+			case MICROSECONDS:
+				timeSinceInit = (double)mClock.getTimeMicroseconds();
+				break;
+			case PERCENT:
+			{
+				timeSinceInit = 100;
+				break;
+			}
+			default:
+				break;
+		}
+
+		if (timeSinceInit < 0)
+		{
+			timeSinceInit = 0;
+		}
+
+		return timeSinceInit;
+	}
+
 	std::string Profiler::getSummary(TimeFormat format)
 	{
 		if (!mEnabled)
@@ -746,7 +807,7 @@ namespace quickprof
 
 			oss << iter->first;
 			oss << ": ";
-			oss << getBlockTotalTime(iter->first, format);
+			oss << getTotalDuration(iter->first, format);
 			oss << " ";
 			oss << suffix;
 		}
@@ -774,18 +835,6 @@ namespace quickprof
 		{
 			return iter->second;
 		}
-	}
-
-	double Profiler::getMicrosecondsSinceInit()
-	{
-		double timeSinceInit = (double)mClock.getTimeMicroseconds();
-
-		if (timeSinceInit < 0)
-		{
-			timeSinceInit = 0;
-		}
-
-		return timeSinceInit;
 	}
 
 	std::string Profiler::getSuffixString(TimeFormat format)
