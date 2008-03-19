@@ -312,7 +312,7 @@ namespace quickprof
 		@return       The block's average duration per cycle.
 		*/
 		inline double getAvgDuration(const std::string& name, 
-			TimeFormat format);
+			TimeFormat format)const;
 
 		/**
 		Returns the total time spent in the named block since the profiler was 
@@ -356,7 +356,7 @@ namespace quickprof
 
 		@param msg The string to print.
 		*/
-		inline void printError(const std::string& msg);
+		inline void printError(const std::string& msg)const;
 
 		/**
 		Returns a named profile block.
@@ -364,14 +364,14 @@ namespace quickprof
 		@param name The name of the block to return.
 		@return     The named ProfileBlock, or NULL if it can't be found.
 		*/
-		inline ProfileBlock* getProfileBlock(const std::string& name);
+		inline ProfileBlock* getProfileBlock(const std::string& name)const;
 
 		/**
 		Returns the appropriate suffix string for the given time format.
 
 		@return The suffix string.
 		*/
-		inline std::string getSuffixString(TimeFormat format);
+		inline std::string getSuffixString(TimeFormat format)const;
 
 		/// Determines whether the profiler is enabled.
 		bool mEnabled;
@@ -664,7 +664,7 @@ namespace quickprof
 	}
 
 	double Profiler::getAvgDuration(const std::string& name, 
-		TimeFormat format)
+		TimeFormat format)const
 	{
 		if (!mEnabled)
 		{
@@ -823,14 +823,14 @@ namespace quickprof
 		return oss.str();
 	}
 
-	void Profiler::printError(const std::string& msg)
+	void Profiler::printError(const std::string& msg)const
 	{
 		std::cout << "[QuickProf error] " << msg << std::endl;
 	}
 
-	ProfileBlock* Profiler::getProfileBlock(const std::string& name)
+	ProfileBlock* Profiler::getProfileBlock(const std::string& name)const
 	{
-		std::map<std::string, ProfileBlock*>::iterator iter = 
+		std::map<std::string, ProfileBlock*>::const_iterator iter = 
 			mProfileBlocks.find(name);
 		if (mProfileBlocks.end() == iter)
 		{
@@ -845,7 +845,7 @@ namespace quickprof
 		}
 	}
 
-	std::string Profiler::getSuffixString(TimeFormat format)
+	std::string Profiler::getSuffixString(TimeFormat format)const
 	{
 		std::string suffix;
 		switch(format)
