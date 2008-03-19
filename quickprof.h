@@ -214,6 +214,18 @@ namespace quickprof
 	{
 	public:
 		/**
+		Useful for creating multiple Profiler instances.
+
+		Normally the Profiler class should be accessed only through the 
+		singleton instance method, which provides global access to a single 
+		static Profiler instance.  However, it is also possible to create 
+		several local Profiler instances, if necessary.
+		*/
+		inline Profiler();
+
+		inline ~Profiler();
+
+		/**
 		Accesses the singleton instance.
 
 		@return The Profiler instance.
@@ -330,10 +342,6 @@ namespace quickprof
 		inline std::string getSummary(TimeFormat format=PERCENT);
 
 	private:
-		inline Profiler();
-
-		inline ~Profiler();
-
 		/**
 		Returns everything to its initial state.
 
@@ -406,12 +414,6 @@ namespace quickprof
 		bool mFirstCycle;
 	};
 
-	Profiler& Profiler::instance()
-	{
-		static Profiler self;
-		return self;
-	}
-
 	Profiler::Profiler()
 	{
 		mEnabled = false;
@@ -431,6 +433,12 @@ namespace quickprof
 		// instance is static.
 
 		destroy();
+	}
+
+	Profiler& Profiler::instance()
+	{
+		static Profiler self;
+		return self;
 	}
 
 	void Profiler::destroy()
