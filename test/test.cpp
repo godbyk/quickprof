@@ -1,9 +1,8 @@
 /************************************************************************
 * QuickProf                                                             *
-* Copyright (C) 2006-2007                                               *
-* Tyler Streeter  http://www.tylerstreeter.net  tylerstreeter@gmail.com *
-* All rights reserved.                                                  *
-* Web: http://quickprof.sourceforge.net                                 *
+* http://quickprof.sourceforge.net                                      *
+* Copyright (C) 2006-2008                                               *
+* Tyler Streeter (http://www.tylerstreeter.net)                         *
 *                                                                       *
 * This library is free software; you can redistribute it and/or         *
 * modify it under the terms of EITHER:                                  *
