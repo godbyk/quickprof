@@ -4,6 +4,41 @@ Copyright (c) 2006-2008
 Tyler Streeter (http://www.tylerstreeter.net)
 
 
+Version 1.0.0
+March 26, 2008
+============================================================
+
+Release Notes
+----------------------------------------------------
+This release includes a few (non-breaking) API changes and several minor bug fixes and optimizations.  The quickprof::Profiler constructor and destructor have been made public in order to allow the creation of multiple independent profiler instances.  There is a new public method quickprof::getTotalDuration (similar to quickprof::getAvgDuration) which provides access to the total time spent in a profiling block.
+
+Change Log
+----------------------------------------------------
+* 3-26-08: Updated the doxygen file.
+
+* 3-26-08: Updated test Visual Studio project files from vc8 (2005) to vc9 (2008).
+
+* 3-20-08: Updated the copyright year in all license notices.
+
+* 3-19-08: Made some Profiler methods const.
+
+* 3-19-08: Made the Profiler constructor and destructor public in order to allow the possibility of creating several local Profiler instances, as opposed to using a single global static instance via the singleton instance method.
+
+* 3-17-08: Changed the Profiler to allow re-initialization.  Added new public Profiler methods to the API: double getTimeSinceInit(TimeFormat format) (replacing the private getMicrosecondsSinceInit), and double getTotalDuration(const std::string& name, TimeFormat format) (replacing the private getBlockTotalTime).
+
+* 3-16-08: Several minor optimizations related to std::map usage.
+
+* 10-8-07: Fixed a bug related to std::map usage.  Previously we were checking for the existence of keys using the [] operator, which always creates a new key-value pair, even when the key doesn't exist.  Now we're using the map find() function to search for items properly.
+
+* 10-5-07: Fixed a bug that showed up when using smoothing and measuring the average block time as a percentage.  If a block's processing time fluctuated rapidly (say 1ms, 10ms, 1ms, 10ms), its average block time would be smoothed out (~5ms), but the total cycle time (say 2ms, 25ms, 2ms, 25ms) was not smoothed out, yielding percentages higher than 100% (so the result in our example would be 250%, 20%, 250%, 20%).  This problem is now solved by smoothing the total cycle time in addition to smoothing the block times.
+
+* 4-10-07: Reworked the getTimeMicroseconds clock function to make its results valid for long runtimes.  I thought this was fixed in the previous revision, but it wasn't.  It appears that timing results will be valid for a maximum runtime of about 104 years (running on a machine with clock frequency 2.8 GHz).  Also removed getTimeMilliseconds since it wasn't being used.
+
+* 4-6-07: Added a few bugs to the todo list.
+
+* 4-5-07: Greatly improved the accuracy of the clock system, which was limiting the maximum profile time to about an hour of runtime.  Previously, the elapsed time was represented with unsigned long ints (usually 32 bits), which gave us a maximum representable time of ~1193 hours (in milliseconds) and ~1.19 hours (for microseconds).  Now we use unsigned long long ints (usually 64 bits), which gives us a maximum possible time of ~585 million years (for milliseconds) and ~585 thousand years (for microseconds).
+
+
 Version 0.9.0
 March 21, 2007
 ============================================================
