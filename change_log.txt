@@ -10,7 +10,7 @@ March 26, 2008
 
 Release Notes
 ----------------------------------------------------
-This release includes a few (non-breaking) API changes and several minor bug fixes and optimizations.  The quickprof::Profiler constructor and destructor have been made public in order to allow the creation of multiple independent profiler instances.  There is a new public method quickprof::getTotalDuration (similar to quickprof::getAvgDuration) which provides access to the total time spent in a profiling block.
+This release includes a few (non-breaking) API changes and several minor bug fixes and optimizations.  The profiler can now be re-initialized, which erases all previous blocks and timing data.  The quickprof::Profiler constructor and destructor have been made public in order to allow the creation of multiple independent profiler instances.  There is a new public method quickprof::getTotalDuration (similar to quickprof::getAvgDuration) which provides access to the total time spent in a profiling block.  The Windows clock is now accurate for longer profiles (up to 104 years, instead of 1.19 hours).  Data smoothing now yields correct results when time is represented as percentages.
 
 Change Log
 ----------------------------------------------------
