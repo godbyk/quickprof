@@ -27,8 +27,30 @@
 
 int randomIntUniform(int min, int max)
 {
-	double fraction = (double)rand() / (double)(RAND_MAX + 1.0);
-	return (int)((double)(max - min + 1) * fraction) + min;
+	// Note: rand() isn't a very good generator, but it's good enough for 
+	// simple tasks that only require a few thousand values.
+
+	int range = max - min;
+	int randValue = rand();
+	int randMaxValue = RAND_MAX;
+	while (randMaxValue < range)
+	{
+		// Increase the random value range until we reach the desired 
+		// range.
+		randValue = randValue * RAND_MAX;
+		randMaxValue = randMaxValue * RAND_MAX;
+		if (randValue < randMaxValue)
+		{
+			randValue += rand();
+		}
+	}
+
+	// Get a uniform random real value from [0, 1).
+	double zeroToOneHalfOpen = randValue / (randMaxValue + 1.0);
+
+	// The [0, 1) value times (max - min + 1) gives each integer within 
+	// [0, max - min] an equal chance of being chosen.
+	return min + int((range + 1) * zeroToOneHalfOpen);
 }
 
 void approxDelay(int milliseconds)
