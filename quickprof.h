@@ -646,7 +646,7 @@ namespace quickprof
 				mFirstFileOutput = false;
 			}
 
-			mOutputFile << getTimeSinceInit(SECONDS) * (double)0.000001;
+			mOutputFile << getTimeSinceInit(SECONDS);
 
 			// Print the cycle time for each block.
 			for (iter = blocksBegin; iter != blocksEnd; ++iter)
