@@ -340,6 +340,21 @@ namespace quickprof
 		*/
 		inline std::string getSummary(TimeFormat format=PERCENT);
 
+		/**
+		Returns the number of blocks currently defined (e.g. for iterating).
+
+		@return The number of blocks.
+		*/
+		inline size_t getNumBlocks()const;
+
+		/**
+		Returns the name of a block (e.g. for iterating).
+
+		@param i The block index.
+		@return  The block name as a string, or empty string if index is invalid.
+		*/
+		inline const std::string& getBlockName(size_t i)const;
+
 	private:
 		/**
 		Returns everything to its initial state.
@@ -387,7 +402,7 @@ namespace quickprof
 		double mAvgCycleDurationMicroseconds;
 
 		/// Internal map of named profile blocks.
-		std::map<std::string, ProfileBlock*> mProfileBlocks;
+		std::map<std::string, ProfileBlock*> mBlocks;
 
 		/// The data output file used if this feature is enabled in init.
 		std::ofstream mOutputFile;
@@ -446,10 +461,10 @@ namespace quickprof
 		mClock.reset();
 		mCurrentCycleStartMicroseconds = 0;
 		mAvgCycleDurationMicroseconds = 0;
-		while (!mProfileBlocks.empty())
+		while (!mBlocks.empty())
 		{
-			delete (*mProfileBlocks.begin()).second;
-			mProfileBlocks.erase(mProfileBlocks.begin());
+			delete (*mBlocks.begin()).second;
+			mBlocks.erase(mBlocks.begin());
 		}
 		if (mOutputFile.is_open())
 		{
@@ -529,12 +544,12 @@ namespace quickprof
 		ProfileBlock* block = NULL;
 
 		std::map<std::string, ProfileBlock*>::iterator iter = 
-			mProfileBlocks.find(name);
-		if (mProfileBlocks.end() == iter)
+			mBlocks.find(name);
+		if (mBlocks.end() == iter)
 		{
 			// The named block does not exist.  Create a new ProfileBlock.
 			block = new ProfileBlock();
-			mProfileBlocks[name] = block;
+			mBlocks[name] = block;
 		}
 		else
 		{
@@ -594,9 +609,9 @@ namespace quickprof
 
 		// Update the average cycle time for each block.
 		std::map<std::string, ProfileBlock*>::iterator blocksBegin = 
-			mProfileBlocks.begin();
+			mBlocks.begin();
 		std::map<std::string, ProfileBlock*>::iterator blocksEnd = 
-			mProfileBlocks.end();
+			mBlocks.end();
 		std::map<std::string, ProfileBlock*>::iterator iter = blocksBegin;
 		for (; iter != blocksEnd; ++iter)
 		{
@@ -801,9 +816,9 @@ namespace quickprof
 		std::string suffix = getSuffixString(format);
 
 		std::map<std::string, ProfileBlock*>::iterator blocksBegin = 
-			mProfileBlocks.begin();
+			mBlocks.begin();
 		std::map<std::string, ProfileBlock*>::iterator blocksEnd = 
-			mProfileBlocks.end();
+			mBlocks.end();
 		std::map<std::string, ProfileBlock*>::iterator iter = blocksBegin;
 		for (; iter != blocksEnd; ++iter)
 		{
@@ -822,6 +837,24 @@ namespace quickprof
 		return oss.str();
 	}
 
+	size_t Profiler::getNumBlocks()const
+	{
+		return mBlocks.size();
+	}
+
+	const std::string& Profiler::getBlockName(size_t i)const
+	{
+		if (i>=mBlocks.size())
+		{
+			printError("Invalid block index");
+			static std::string empty="";
+			return empty;
+		}
+		std::map<std::string,ProfileBlock*>::const_iterator iter=mBlocks.begin();
+		for (size_t j=0;j<i;++j) ++iter;
+		return iter->first;
+	}
+
 	void Profiler::printError(const std::string& msg)const
 	{
 		std::cout << "[QuickProf error] " << msg << std::endl;
@@ -830,8 +863,8 @@ namespace quickprof
 	ProfileBlock* Profiler::getProfileBlock(const std::string& name)const
 	{
 		std::map<std::string, ProfileBlock*>::const_iterator iter = 
-			mProfileBlocks.find(name);
-		if (mProfileBlocks.end() == iter)
+			mBlocks.find(name);
+		if (mBlocks.end() == iter)
 		{
 			// The named block does not exist.  Print an error.
 			printError("The profile block named '" + name + 
@@ -849,24 +882,12 @@ namespace quickprof
 		std::string suffix;
 		switch(format)
 		{
-			case SECONDS:
-				suffix = "s";
-				break;
-			case MILLISECONDS:
-				suffix = "ms";
-				break;
-			case MICROSECONDS:
-				suffix = "us";
-				break;
-			case PERCENT:
-			{
-				suffix = "%";
-				break;
-			}
-			default:
-				break;
+			case SECONDS: suffix="s"; break;
+			case MILLISECONDS: suffix="ms"; break;
+			case MICROSECONDS: suffix="us"; break;
+			case PERCENT: suffix="%"; break;
+			default: break;
 		}
-
 		return suffix;
 	}
 };
