@@ -781,6 +781,6 @@ std::string Profiler::getSuffixString(TimeFormat format) const
 	return suffix;
 }
 
-};
+}
 
 #endif
