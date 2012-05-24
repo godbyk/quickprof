@@ -270,7 +270,7 @@ public:
                             to a file.
 	*/
 	inline void init(double smoothing=0.0, 
-		const std::string outputFilename="", size_t printPeriod=1,
+		const std::string& outputFilename="", size_t printPeriod=1,
 		TimeFormat printFormat=MILLISECONDS);
 
 	/**
@@ -475,7 +475,7 @@ void Profiler::destroy()
 	mFirstCycle = true;
 }
 
-void Profiler::init(double smoothing, const std::string outputFilename, 
+void Profiler::init(double smoothing, const std::string& outputFilename, 
 	size_t printPeriod, TimeFormat printFormat)
 {
 	if (mEnabled)
