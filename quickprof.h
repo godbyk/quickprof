@@ -33,7 +33,7 @@
 #include <fstream>
 #include <sstream>
 #include <map>
-#include <math.h>
+#include <cmath>
 
 #if defined(WIN32) || defined(_WIN32)
 	#define USE_WINDOWS_TIMERS
@@ -118,7 +118,7 @@ public:
             integers are available, the return value is valid for 2^63 
             clock cycles (over 104 years w/ clock frequency 2.8 GHz).
 	*/
-	unsigned long long int getTimeMicroseconds()
+	unsigned long long int getTimeMicroseconds() const
 	{
 #ifdef USE_WINDOWS_TIMERS
 		// Compute the number of elapsed clock cycles since the 
@@ -308,7 +308,7 @@ public:
 	@return       The block's average duration per cycle.
 	*/
 	inline double getAvgDuration(const std::string& name, 
-		TimeFormat format)const;
+		TimeFormat format) const;
 
 	/**
 	Returns the total time spent in the named block since the profiler was 
@@ -319,7 +319,7 @@ public:
 	@return       The block total time.
 	*/
 	inline double getTotalDuration(const std::string& name, 
-		TimeFormat format);
+		TimeFormat format) const;
 
 	/**
 	Computes the elapsed time since the profiler was initialized.
@@ -327,7 +327,7 @@ public:
 	@param format The desired time format to use for the result.
 	@return The elapsed time.
 	*/
-	inline double getTimeSinceInit(TimeFormat format);
+	inline double getTimeSinceInit(TimeFormat format) const;
 
 	/**
 	Returns a summary of total times in each block.
@@ -335,14 +335,14 @@ public:
 	@param format The desired time format to use for the results.
 	@return       The timing summary as a string.
 	*/
-	inline std::string getSummary(TimeFormat format=PERCENT);
+	inline std::string getSummary(TimeFormat format=PERCENT) const;
 
 	/**
 	Returns the number of blocks currently defined (e.g. for iterating).
 
 	@return The number of blocks.
 	*/
-	inline size_t getNumBlocks()const;
+	inline size_t getNumBlocks() const;
 
 	/**
 	Returns the name of a block (e.g. for iterating).
@@ -350,7 +350,7 @@ public:
 	@param i The block index.
 	@return  The block name as a string, or empty string if index is invalid.
 	*/
-	inline const std::string& getBlockName(size_t i)const;
+	inline const std::string& getBlockName(size_t i) const;
 
 private:
 	/**
@@ -367,7 +367,7 @@ private:
 
 	@param msg The string to print.
 	*/
-	inline void printError(const std::string& msg)const;
+	inline void printError(const std::string& msg) const;
 
 	/**
 	Returns a named profile block.
@@ -375,14 +375,14 @@ private:
 	@param name The name of the block to return.
 	@return     The named ProfileBlock, or NULL if it can't be found.
 	*/
-	inline ProfileBlock* getProfileBlock(const std::string& name)const;
+	inline ProfileBlock* getProfileBlock(const std::string& name) const;
 
 	/**
 	Returns the appropriate suffix string for the given time format.
 
 	@return The suffix string.
 	*/
-	inline std::string getSuffixString(TimeFormat format)const;
+	inline std::string getSuffixString(TimeFormat format) const;
 
 	/// Determines whether the profiler is enabled.
 	bool mEnabled;
@@ -639,7 +639,7 @@ void Profiler::endCycle()
 	mCurrentCycleStartMicroseconds = mClock.getTimeMicroseconds();
 }
 
-double Profiler::getAvgDuration(const std::string& name, TimeFormat format)const
+double Profiler::getAvgDuration(const std::string& name, TimeFormat format) const
 {
 	if (!mEnabled) return 0;
 
@@ -663,7 +663,7 @@ double Profiler::getAvgDuration(const std::string& name, TimeFormat format)const
 	return result;
 }
 
-double Profiler::getTotalDuration(const std::string& name, TimeFormat format)
+double Profiler::getTotalDuration(const std::string& name, TimeFormat format) const
 {
 	if (!mEnabled) return 0;
 
@@ -691,7 +691,7 @@ double Profiler::getTotalDuration(const std::string& name, TimeFormat format)
 	return result;
 }
 
-double Profiler::getTimeSinceInit(TimeFormat format)
+double Profiler::getTimeSinceInit(TimeFormat format) const
 {
 	double timeSinceInit = 0;
 	switch(format)
@@ -706,16 +706,16 @@ double Profiler::getTimeSinceInit(TimeFormat format)
 	return timeSinceInit;
 }
 
-std::string Profiler::getSummary(TimeFormat format)
+std::string Profiler::getSummary(TimeFormat format) const
 {
 	if (!mEnabled) return "";
 
 	std::ostringstream oss;
 	std::string suffix = getSuffixString(format);
 
-	std::map<std::string, ProfileBlock*>::iterator blocksBegin = mBlocks.begin();
-	std::map<std::string, ProfileBlock*>::iterator blocksEnd = mBlocks.end();
-	std::map<std::string, ProfileBlock*>::iterator iter = blocksBegin;
+	std::map<std::string, ProfileBlock*>::const_iterator blocksBegin = mBlocks.begin();
+	std::map<std::string, ProfileBlock*>::const_iterator blocksEnd = mBlocks.end();
+	std::map<std::string, ProfileBlock*>::const_iterator iter = blocksBegin;
 	for (; iter != blocksEnd; ++iter)
 	{
 		if (iter != blocksBegin) oss << "\n";
@@ -729,12 +729,12 @@ std::string Profiler::getSummary(TimeFormat format)
 	return oss.str();
 }
 
-size_t Profiler::getNumBlocks()const
+size_t Profiler::getNumBlocks() const
 {
 	return mBlocks.size();
 }
 
-const std::string& Profiler::getBlockName(size_t i)const
+const std::string& Profiler::getBlockName(size_t i) const
 {
 	if (i>=mBlocks.size())
 	{
@@ -747,12 +747,12 @@ const std::string& Profiler::getBlockName(size_t i)const
 	return iter->first;
 }
 
-void Profiler::printError(const std::string& msg)const
+void Profiler::printError(const std::string& msg) const
 {
 	std::cout << "[QuickProf error] " << msg << std::endl;
 }
 
-ProfileBlock* Profiler::getProfileBlock(const std::string& name)const
+ProfileBlock* Profiler::getProfileBlock(const std::string& name) const
 {
 	std::map<std::string, ProfileBlock*>::const_iterator iter = mBlocks.find(name);
 	if (mBlocks.end() == iter)
@@ -765,7 +765,7 @@ ProfileBlock* Profiler::getProfileBlock(const std::string& name)const
 	else return iter->second;
 }
 
-std::string Profiler::getSuffixString(TimeFormat format)const
+std::string Profiler::getSuffixString(TimeFormat format) const
 {
 	std::string suffix;
 	switch(format)
