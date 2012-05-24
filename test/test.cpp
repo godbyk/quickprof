@@ -57,7 +57,7 @@ int randomIntUniform(int min, int max)
 
 void approxDelay(int milliseconds)
 {
-	int spread = (int)(0.15 * (double)milliseconds);
+	int spread = static_cast<int>(0.15 * static_cast<double>(milliseconds));
 	int delay = milliseconds + randomIntUniform(-spread, spread);
 #ifdef WIN32
 	::Sleep(delay);
@@ -69,7 +69,7 @@ void approxDelay(int milliseconds)
 int main(int argc, char* argv[])
 {
 	// Seed the random number generator for the 'randomIntUniform' function.
-	srand((unsigned int)time(NULL));
+	srand(static_cast<unsigned int>(time(NULL)));
 
 	// To disable profiling, simply comment out the following line.
 	PROFILER.init(3, "results.dat", 1, quickprof::MILLISECONDS);

@@ -179,7 +179,7 @@ public:
 		// int, the return value here is valid for over 136 years.
 		struct timeval currentTime;
 		gettimeofday(&currentTime, NULL);
-		return (unsigned long long int)(currentTime.tv_sec - 
+		return static_cast<unsigned long long int>(currentTime.tv_sec - 
 			mStartTime.tv_sec) * 1000000 + (currentTime.tv_usec - 
 			mStartTime.tv_usec);
 #endif
@@ -568,13 +568,13 @@ void Profiler::endCycle()
 	if (mFirstCycle)
 	{
 		mAvgCycleDurationMicroseconds = 
-			(double)currentCycleDurationMicroseconds;
+			static_cast<double>(currentCycleDurationMicroseconds);
 	}
 	else
 	{
 		mAvgCycleDurationMicroseconds = mMovingAvgScalar * 
 			mAvgCycleDurationMicroseconds + (1 - mMovingAvgScalar) 
-			* (double)currentCycleDurationMicroseconds;
+			* static_cast<double>(currentCycleDurationMicroseconds);
 	}
 
 	// Update the average cycle time for each block.
@@ -591,13 +591,13 @@ void Profiler::endCycle()
 		if (mFirstCycle)
 		{
 			block->avgCycleTotalMicroseconds = 
-				(double)block->currentCycleTotalMicroseconds;
+				static_cast<double>(block->currentCycleTotalMicroseconds);
 		}
 		else
 		{
 			block->avgCycleTotalMicroseconds = mMovingAvgScalar * 
 				block->avgCycleTotalMicroseconds + (1 - mMovingAvgScalar) * 
-				(double)block->currentCycleTotalMicroseconds;
+				static_cast<double>(block->currentCycleTotalMicroseconds);
 		}
 
 		block->currentCycleTotalMicroseconds = 0;
@@ -672,7 +672,7 @@ double Profiler::getTotalDuration(const std::string& name, TimeFormat format) co
 	ProfileBlock* block = getProfileBlock(name);
 	if (!block) return 0;
 
-	double blockTotalMicroseconds = (double)block->totalMicroseconds;
+	double blockTotalMicroseconds = static_cast<double>(block->totalMicroseconds);
 	double result = 0;
 
 	switch(format)
@@ -696,11 +696,12 @@ double Profiler::getTotalDuration(const std::string& name, TimeFormat format) co
 double Profiler::getTimeSinceInit(TimeFormat format) const
 {
 	double timeSinceInit = 0;
+    const double timeMicroseconds = static_cast<double>(mClock.getTimeMicroseconds());
 	switch(format)
 	{
-		case SECONDS: timeSinceInit=(double)mClock.getTimeMicroseconds()*0.000001; break;
-		case MILLISECONDS: timeSinceInit=(double)mClock.getTimeMicroseconds()*0.001; break;
-		case MICROSECONDS: timeSinceInit=(double)mClock.getTimeMicroseconds(); break;
+		case SECONDS: timeSinceInit=timeMicroseconds*0.000001; break;
+		case MILLISECONDS: timeSinceInit=timeMicroseconds*0.001; break;
+		case MICROSECONDS: timeSinceInit=timeMicroseconds; break;
 		case PERCENT: timeSinceInit = 100; break;
 		default: break;
 	}
