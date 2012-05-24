@@ -58,7 +58,7 @@ int randomIntUniform(int min, int max)
 void approxDelay(int milliseconds)
 {
 	int spread = static_cast<int>(0.15 * static_cast<double>(milliseconds));
-	int delay = milliseconds + randomIntUniform(-spread, spread);
+	unsigned int delay = static_cast<unsigned int>(milliseconds + randomIntUniform(-spread, spread));
 #ifdef WIN32
 	::Sleep(delay);
 #else

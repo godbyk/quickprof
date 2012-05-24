@@ -179,9 +179,10 @@ public:
 		// int, the return value here is valid for over 136 years.
 		struct timeval currentTime;
 		gettimeofday(&currentTime, NULL);
-		return static_cast<unsigned long long int>(currentTime.tv_sec - 
-			mStartTime.tv_sec) * 1000000 + (currentTime.tv_usec - 
-			mStartTime.tv_usec);
+		return static_cast<unsigned long long>(currentTime.tv_sec 
+			- mStartTime.tv_sec) * 1000000 
+			+ static_cast<unsigned long long>(currentTime.tv_usec 
+				- mStartTime.tv_usec);
 #endif
 	}
 
