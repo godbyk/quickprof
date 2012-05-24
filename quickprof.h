@@ -460,11 +460,12 @@ void Profiler::destroy()
 	mClock.reset();
 	mCurrentCycleStartMicroseconds = 0;
 	mAvgCycleDurationMicroseconds = 0;
-	while (!mBlocks.empty())
+	for (ProfileBlocks::iterator iter = mBlocks.begin(); iter != mBlocks.end(); ++iter)
 	{
-		delete (*mBlocks.begin()).second;
-		mBlocks.erase(mBlocks.begin());
+		delete iter->second;
+		iter->second = NULL;
 	}
+	mBlocks.clear();
 	if (mOutputFile.is_open()) mOutputFile.close();
 	mFirstFileOutput = true;
 	mMovingAvgScalar = 0;
