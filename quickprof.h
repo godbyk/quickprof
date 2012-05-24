@@ -59,12 +59,13 @@ namespace quickprof
 /// of code.
 struct ProfileBlock
 {
-	ProfileBlock()
+	ProfileBlock() :
+		currentBlockStartMicroseconds(0),
+		currentCycleTotalMicroseconds(0),
+		avgCycleTotalMicroseconds(0),
+		totalMicroseconds(0)
 	{
-		currentBlockStartMicroseconds = 0;
-		currentCycleTotalMicroseconds = 0;
-		avgCycleTotalMicroseconds = 0;
-		totalMicroseconds = 0;
+		// do nothing
 	}
 
 	/// The starting time (in us) of the current block update.
@@ -424,17 +425,18 @@ private:
 	bool mFirstCycle;
 };
 
-Profiler::Profiler()
+Profiler::Profiler() :
+	mEnabled(false),
+	mCurrentCycleStartMicroseconds(0),
+	mAvgCycleDurationMicroseconds(0),
+	mFirstFileOutput(true),
+	mMovingAvgScalar(0),
+	mPrintPeriod(1),
+	mPrintFormat(SECONDS),
+	mCycleCounter(0),
+	mFirstCycle(true)
 {
-	mEnabled = false;
-	mCurrentCycleStartMicroseconds = 0;
-	mAvgCycleDurationMicroseconds = 0;
-	mFirstFileOutput = true;
-	mMovingAvgScalar = 0;
-	mPrintPeriod = 1;
-	mPrintFormat = SECONDS;
-	mCycleCounter = 0;
-	mFirstCycle = true;
+	// do nothing
 }
 
 Profiler::~Profiler()
