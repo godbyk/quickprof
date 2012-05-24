@@ -399,7 +399,8 @@ private:
 	double mAvgCycleDurationMicroseconds;
 
 	/// Internal map of named profile blocks.
-	std::map<std::string, ProfileBlock*> mBlocks;
+	typedef std::map<std::string, ProfileBlock*> ProfileBlocks;
+	ProfileBlocks mBlocks;
 
 	/// The data output file used if this feature is enabled in init.
 	std::ofstream mOutputFile;
@@ -525,7 +526,7 @@ void Profiler::beginBlock(const std::string& name)
 
 	ProfileBlock* block = NULL;
 
-	std::map<std::string, ProfileBlock*>::iterator iter = mBlocks.find(name);
+	ProfileBlocks::iterator iter = mBlocks.find(name);
 	if (mBlocks.end() == iter)
 	{
 		// The named block does not exist.  Create a new ProfileBlock.
@@ -576,9 +577,9 @@ void Profiler::endCycle()
 	}
 
 	// Update the average cycle time for each block.
-	std::map<std::string, ProfileBlock*>::iterator blocksBegin = mBlocks.begin();
-	std::map<std::string, ProfileBlock*>::iterator blocksEnd = mBlocks.end();
-	std::map<std::string, ProfileBlock*>::iterator iter = blocksBegin;
+	ProfileBlocks::iterator blocksBegin = mBlocks.begin();
+	ProfileBlocks::iterator blocksEnd = mBlocks.end();
+	ProfileBlocks::iterator iter = blocksBegin;
 	for (; iter != blocksEnd; ++iter)
 	{
 		ProfileBlock* block = iter->second;
@@ -713,9 +714,9 @@ std::string Profiler::getSummary(TimeFormat format) const
 	std::ostringstream oss;
 	std::string suffix = getSuffixString(format);
 
-	std::map<std::string, ProfileBlock*>::const_iterator blocksBegin = mBlocks.begin();
-	std::map<std::string, ProfileBlock*>::const_iterator blocksEnd = mBlocks.end();
-	std::map<std::string, ProfileBlock*>::const_iterator iter = blocksBegin;
+	ProfileBlocks::const_iterator blocksBegin = mBlocks.begin();
+	ProfileBlocks::const_iterator blocksEnd = mBlocks.end();
+	ProfileBlocks::const_iterator iter = blocksBegin;
 	for (; iter != blocksEnd; ++iter)
 	{
 		if (iter != blocksBegin) oss << "\n";
@@ -742,7 +743,7 @@ const std::string& Profiler::getBlockName(size_t i) const
 		static std::string empty="";
 		return empty;
 	}
-	std::map<std::string,ProfileBlock*>::const_iterator iter=mBlocks.begin();
+	ProfileBlocks::const_iterator iter=mBlocks.begin();
 	for (size_t j=0;j<i;++j) ++iter;
 	return iter->first;
 }
@@ -754,7 +755,7 @@ void Profiler::printError(const std::string& msg) const
 
 ProfileBlock* Profiler::getProfileBlock(const std::string& name) const
 {
-	std::map<std::string, ProfileBlock*>::const_iterator iter = mBlocks.find(name);
+	ProfileBlocks::const_iterator iter = mBlocks.find(name);
 	if (mBlocks.end() == iter)
 	{
 		// The named block does not exist.  Print an error.
