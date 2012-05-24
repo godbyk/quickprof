@@ -25,13 +25,15 @@
 
 #include "../quickprof.h"
 
+#include <cstdlib>
+
 int randomIntUniform(int min, int max)
 {
 	// Note: rand() isn't a very good generator, but it's good enough for 
 	// simple tasks that only require a few thousand values.
 
 	int range = max - min;
-	int randValue = rand();
+	int randValue = std::rand();
 	int randMaxValue = RAND_MAX;
 	while (randMaxValue < range)
 	{
