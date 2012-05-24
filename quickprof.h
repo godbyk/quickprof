@@ -88,7 +88,7 @@ struct ProfileBlock
 class Clock
 {
 public:
-	Clock()
+	Clock() : mStartTime()
 	{
 #ifdef USE_WINDOWS_TIMERS
 		QueryPerformanceFrequency(&mClockFrequency);
@@ -428,8 +428,11 @@ private:
 
 Profiler::Profiler() :
 	mEnabled(false),
+	mClock(),
 	mCurrentCycleStartMicroseconds(0),
 	mAvgCycleDurationMicroseconds(0),
+	mBlocks(),
+	mOutputFile(),
 	mFirstFileOutput(true),
 	mMovingAvgScalar(0),
 	mPrintPeriod(1),
