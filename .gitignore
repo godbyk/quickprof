@@ -20,3 +20,6 @@
 # Test program executable
 test/test
 
+# Generated documentation
+doxygen/doc
+
