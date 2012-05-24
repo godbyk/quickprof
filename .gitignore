@@ -1,1 +1,22 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+
+# Compiled Dynamic libraries
+*.so
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+
+# Temporary, swap, and backup files
 *.swp
+
+# SCons generated files
+.sconsign.dblite
+
+# Test program executable
+test/test
+
